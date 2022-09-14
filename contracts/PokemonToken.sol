@@ -44,11 +44,7 @@ contract PokemonToken is NFTTemplate {
         currentId++;
     }
 
-    function createPokemon(
-        string memory _name,
-        uint256 _tokenId,
-        string memory _tokenUri
-    ) external {
+    function createPokemon(string memory _name, uint256 _tokenId) external {
         uint256 pokemonLvl = lvlToken.balanceOf(msg.sender);
         require(pokemonLvl > 0, "You don't have PLVL tokens");
 
@@ -57,5 +53,17 @@ contract PokemonToken is NFTTemplate {
         pokemonOf[msg.sender][_tokenId] = pokemon;
     }
 
-    function evolution(uint256 _tokenId) external lvlUpdate(_tokenId) {}
+    function _deletePokemon(uint256 _tokenId) internal {
+        require(
+            _isApprovedOrOwner(msg.sender, _tokenId),
+            "Not an owner of token or approved for it"
+        );
+        _burn(_tokenId);
+
+        delete pokemonOf[msg.sender][_tokenId];
+    }
+
+    // function evolution(uint256 _tokenId) external lvlUpdate(_tokenId) {
+    // 	require()
+    // }
 }
