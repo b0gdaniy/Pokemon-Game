@@ -1,0 +1,30 @@
+{
+  "name": "pokemon-game",
+  "version": "1.0.0",
+  "description": "Blockchain game on Ethereum in the form of a decentralized application (DApp)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/r0ugeEngine/Pokemon-Game.git"
+  },
+  "keywords": [
+    "Pokemon",
+    "Game",
+    "DApp",
+    "Solidity",
+    "Ethereum"
+  ],
+  "author": "Bohdan Pukhno",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/r0ugeEngine/Pokemon-Game/issues"
+  },
+  "homepage": "https://github.com/r0ugeEngine/Pokemon-Game#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^1.0.2",
+    "hardhat": "^2.11.1"
+  }
+}
