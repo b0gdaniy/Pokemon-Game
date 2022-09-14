@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract PokemonLevelToken is ERC20, Ownable {
-    constructor() ERC20("MyToken", "MTK") {
+    constructor() ERC20("PokemonLevel", "PLVL") {
         _mint(msg.sender, 1000 * 10**decimals());
     }
 
