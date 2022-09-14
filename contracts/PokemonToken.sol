@@ -16,11 +16,12 @@ contract PokemonToken is NFTTemplate {
         uint256 stage;
     }
 
-    mapping(address => mapping(uint256 => Pokemon)) internal pokemons;
+    uint256 internal currentId;
+    mapping(address => mapping(uint256 => Pokemon)) internal pokemonOf;
 
     modifier lvlUpdate(uint256 _tokenId) {
         uint256 pokemonLvl = lvlToken.balanceOf(msg.sender);
-        pokemons[msg.sender][_tokenId].level = pokemonLvl;
+        pokemonOf[msg.sender][_tokenId].level = pokemonLvl;
 
         _;
     }
@@ -32,6 +33,17 @@ contract PokemonToken is NFTTemplate {
         stoneToken = _stoneToken;
     }
 
+    receive() external payable {
+        require(
+            msg.value > 0.01 ether,
+            "The amount sent must be greater than 0.01 ETH"
+        );
+
+        safeMint(msg.sender, currentId);
+        pokemonOf[msg.sender][currentId].tokenId = currentId;
+        currentId++;
+    }
+
     function createPokemon(
         string memory _name,
         uint256 _tokenId,
@@ -40,14 +52,10 @@ contract PokemonToken is NFTTemplate {
         uint256 pokemonLvl = lvlToken.balanceOf(msg.sender);
         require(pokemonLvl > 0, "You don't have PLVL tokens");
 
-        safeMint(msg.sender, _tokenId, _tokenUri);
-
         Pokemon memory pokemon = Pokemon(_tokenId, _name, pokemonLvl, 1);
 
-        pokemons[msg.sender][_tokenId] = pokemon;
+        pokemonOf[msg.sender][_tokenId] = pokemon;
     }
 
-    //function lvlUpdate()
-
-    //function evolution() external {}
+    function evolution(uint256 _tokenId) external lvlUpdate(_tokenId) {}
 }
