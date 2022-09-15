@@ -36,7 +36,7 @@ contract NFTTemplate is ERC721, Ownable {
         return
             uint256(
                 keccak256(abi.encode(block.timestamp, msg.sender, nonce++))
-            ) % 100;
+            ) % 3;
     }
 
     function _baseURI() internal pure override returns (string memory) {
