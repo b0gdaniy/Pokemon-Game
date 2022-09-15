@@ -123,13 +123,14 @@ contract PokemonToken is NFTTemplate {
             "Politoed",
             "Blastoise"
         ];
-        if (stage == 1) {
-            return firstStageNames[index];
-        } else if (stage == 2) {
+
+        if (stage == 2) {
             return secondStageNames[index];
-        } else {
+        } else if (stage == 3) {
             return thirdStageNames[index];
         }
+
+        return firstStageNames[index];
     }
 
     function evoPrice(PokemonsNum index, uint256 stage)
