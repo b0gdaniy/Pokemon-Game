@@ -35,10 +35,6 @@ contract StoneToken is NFTTemplate {
     }
 
     function giveStoneTo() internal {
-        if (random() > 50) {
-            stoneOf[msg.sender][currentId - 1].stoneType = stoneTypes[0];
-        } else {
-            stoneOf[msg.sender][currentId - 1].stoneType = stoneTypes[1];
-        }
+        stoneOf[msg.sender][currentId - 1].stoneType = stoneTypes[random()];
     }
 }
