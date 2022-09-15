@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract PokemonLevelToken is ERC20, Ownable {
+contract PokemonLevelToken is ERC20, ERC20Burnable, Ownable {
     constructor() ERC20("PokemonLevel", "PLVL") {}
 
     /**
