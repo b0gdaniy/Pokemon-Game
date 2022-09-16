@@ -14,6 +14,12 @@ contract StoneToken is NFTTemplate {
     uint256 private currentId;
     mapping(address => Stone) private _stoneOf;
 
+    modifier tokenExists(address stoneOwner) {
+        string memory _name = _stoneOf[stoneOwner].name;
+        require(bytes(_name).length > 0, "You don't have STN token");
+        _;
+    }
+
     constructor() NFTTemplate("Stone", "STN") {}
 
     receive() external payable {
@@ -50,12 +56,31 @@ contract StoneToken is NFTTemplate {
         return stoneTypes[uint256(_stoneType)];
     }
 
-    function stoneType(address stoneOwner) public view returns (StoneType) {
+    function stoneType(address stoneOwner)
+        public
+        view
+        tokenExists(stoneOwner)
+        returns (StoneType)
+    {
         return _stoneOf[stoneOwner].stoneType;
     }
 
-    function stoneId(address tokenOwner) public view returns (uint256) {
-        return _stoneOf[tokenOwner].tokenId;
+    function stoneId(address stoneOwner)
+        public
+        view
+        tokenExists(stoneOwner)
+        returns (uint256)
+    {
+        return _stoneOf[stoneOwner].tokenId;
+    }
+
+    function stoneNameOf(address stoneOwner)
+        public
+        view
+        tokenExists(stoneOwner)
+        returns (string memory)
+    {
+        return _stoneOf[stoneOwner].name;
     }
 
     function _createStone(StoneType _index) internal {
@@ -72,9 +97,12 @@ contract StoneToken is NFTTemplate {
         _stoneOf[msg.sender] = stone;
     }
 
-    function deleteStone(address owner, uint256 _tokenId) public {
+    function deleteStone(address stoneOwner, uint256 _tokenId)
+        public
+        tokenExists(stoneOwner)
+    {
         require(
-            _isApprovedOrOwner(owner, _tokenId),
+            _isApprovedOrOwner(stoneOwner, _tokenId),
             "Not an owner of token or approved for it"
         );
         _burn(_tokenId);
