@@ -59,4 +59,12 @@ contract NFTTemplate is ERC721, Ownable {
     function _baseURI() internal pure override returns (string memory) {
         return "https://...";
     }
+
+    function _compareStrings(string memory x, string memory y)
+        private
+        pure
+        returns (bool)
+    {
+        return keccak256(abi.encodePacked(x)) == keccak256(abi.encodePacked(y));
+    }
 }
