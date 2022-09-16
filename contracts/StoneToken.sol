@@ -6,35 +6,77 @@ import "./NFTTemplate.sol";
 contract StoneToken is NFTTemplate {
     struct Stone {
         uint256 tokenId;
-        string stoneType;
+        string name;
+        StoneType stoneType;
     }
 
-    string[] public stoneTypes;
-
+    uint256 public constant STONE_PRICE = 0.01 ether;
     uint256 private currentId;
+    mapping(address => Stone) private _stoneOf;
 
-    mapping(address => mapping(uint256 => Stone)) private stoneOf;
-
-    constructor(string[] memory _stoneTypes) NFTTemplate("Stone", "STN") {
-        for (uint256 i = 0; i < _stoneTypes.length; ++i) {
-            stoneTypes.push(_stoneTypes[i]);
-        }
-    }
+    constructor() NFTTemplate("Stone", "STN") {}
 
     receive() external payable {
         require(
-            msg.value > 0.01 ether,
-            "The amount sent must be greater than 0.01 ETH"
+            msg.value >= STONE_PRICE,
+            "The amount sent must be equal or greater than 0.01 ETH"
         );
 
         safeMint(msg.sender, currentId);
-        stoneOf[msg.sender][currentId].tokenId = currentId;
-        currentId++;
 
-        giveStoneTo();
+        _stoneOf[msg.sender].tokenId = currentId;
+        currentId++;
     }
 
-    function giveStoneTo() internal {
-        stoneOf[msg.sender][currentId - 1].stoneType = stoneTypes[random()];
+    function createStone() external {
+        _createStone(random(4));
+    }
+
+    function createStoneWithIndex(uint256 _index) external onlyOwner {
+        _createStone(_index);
+    }
+
+    function stoneNames(uint256 _stoneType)
+        public
+        pure
+        returns (string memory)
+    {
+        string[4] memory stoneTypes = [
+            "Leaf Stone",
+            "Sun Stone",
+            "Water Stone",
+            "Kings Rock"
+        ];
+        return stoneTypes[_stoneType];
+    }
+
+    function stoneType(address stoneOwner) public view returns (StoneType) {
+        return _stoneOf[stoneOwner].stoneType;
+    }
+
+    function stoneId(address tokenOwner) public view returns (uint256) {
+        return _stoneOf[tokenOwner].tokenId;
+    }
+
+    function _createStone(uint256 _index) internal {
+        require(balanceOf(msg.sender) > 0, "You don't have any STN tokens");
+
+        uint256 _tokenId = _stoneOf[msg.sender].tokenId;
+
+        Stone memory stone = Stone({
+            tokenId: _tokenId,
+            name: stoneNames(_index),
+            stoneType: StoneType(_index)
+        });
+
+        _stoneOf[msg.sender] = stone;
+    }
+
+    function deleteStone(address owner, uint256 _tokenId) public {
+        require(
+            _isApprovedOrOwner(owner, _tokenId),
+            "Not an owner of token or approved for it"
+        );
+        _burn(_tokenId);
     }
 }
