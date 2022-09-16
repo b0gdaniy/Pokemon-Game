@@ -29,14 +29,14 @@ contract StoneToken is NFTTemplate {
     }
 
     function createStone() external {
-        _createStone(random(4));
+        _createStone(StoneType(random(4)));
     }
 
-    function createStoneWithIndex(uint256 _index) external onlyOwner {
+    function createStoneWithIndex(StoneType _index) external onlyOwner {
         _createStone(_index);
     }
 
-    function stoneNames(uint256 _stoneType)
+    function stoneNames(StoneType _stoneType)
         public
         pure
         returns (string memory)
@@ -47,7 +47,7 @@ contract StoneToken is NFTTemplate {
             "Water Stone",
             "Kings Rock"
         ];
-        return stoneTypes[_stoneType];
+        return stoneTypes[uint256(_stoneType)];
     }
 
     function stoneType(address stoneOwner) public view returns (StoneType) {
@@ -58,7 +58,7 @@ contract StoneToken is NFTTemplate {
         return _stoneOf[tokenOwner].tokenId;
     }
 
-    function _createStone(uint256 _index) internal {
+    function _createStone(StoneType _index) internal {
         require(balanceOf(msg.sender) > 0, "You don't have any STN tokens");
 
         uint256 _tokenId = _stoneOf[msg.sender].tokenId;
@@ -66,7 +66,7 @@ contract StoneToken is NFTTemplate {
         Stone memory stone = Stone({
             tokenId: _tokenId,
             name: stoneNames(_index),
-            stoneType: StoneType(_index)
+            stoneType: _index
         });
 
         _stoneOf[msg.sender] = stone;
