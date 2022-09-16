@@ -3,8 +3,6 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { NFTTemplate, NFTTemplate__factory } from "../typechain-types";
 
-
-
 describe("NFTTemplate", async () => {
 
 	async function deploy() {
