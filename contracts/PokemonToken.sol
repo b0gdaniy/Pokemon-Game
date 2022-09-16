@@ -243,11 +243,3 @@ contract PokemonToken is NFTTemplate {
         }
     }
 }
-
-// function _compareStrings(string memory x, string memory y)
-//     private
-//     pure
-//     returns (bool)
-// {
-//     return keccak256(abi.encodePacked(x)) == keccak256(abi.encodePacked(y));
-// }
