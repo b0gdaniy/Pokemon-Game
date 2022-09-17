@@ -34,26 +34,25 @@ contract StoneToken is NFTTemplate {
         currentId++;
     }
 
+    function deleteStone(address stoneOwner, uint256 _tokenId)
+        public
+        tokenExists(stoneOwner)
+    {
+        require(
+            _isApprovedOrOwner(stoneOwner, _tokenId),
+            "Not an owner of token or approved for it"
+        );
+        _burn(_tokenId);
+
+        delete _stoneOf[msg.sender];
+    }
+
     function createStone() external {
         _createStone(StoneType(random(4)));
     }
 
     function createStoneWithIndex(StoneType _index) external onlyOwner {
         _createStone(_index);
-    }
-
-    function stoneNames(StoneType _stoneType)
-        public
-        pure
-        returns (string memory)
-    {
-        string[4] memory stoneTypes = [
-            "Leaf Stone",
-            "Sun Stone",
-            "Water Stone",
-            "Kings Rock"
-        ];
-        return stoneTypes[uint256(_stoneType)];
     }
 
     function stoneType(address stoneOwner)
@@ -83,6 +82,20 @@ contract StoneToken is NFTTemplate {
         return _stoneOf[stoneOwner].name;
     }
 
+    function stoneNames(StoneType _stoneType)
+        public
+        pure
+        returns (string memory)
+    {
+        string[4] memory stoneTypes = [
+            "Leaf Stone",
+            "Sun Stone",
+            "Water Stone",
+            "Kings Rock"
+        ];
+        return stoneTypes[uint256(_stoneType)];
+    }
+
     function _createStone(StoneType _index) internal {
         require(balanceOf(msg.sender) > 0, "You don't have any STN tokens");
 
@@ -95,16 +108,5 @@ contract StoneToken is NFTTemplate {
         });
 
         _stoneOf[msg.sender] = stone;
-    }
-
-    function deleteStone(address stoneOwner, uint256 _tokenId)
-        public
-        tokenExists(stoneOwner)
-    {
-        require(
-            _isApprovedOrOwner(stoneOwner, _tokenId),
-            "Not an owner of token or approved for it"
-        );
-        _burn(_tokenId);
     }
 }
