@@ -28,10 +28,7 @@ contract StoneToken is NFTTemplate {
             "The amount sent must be equal or greater than 0.01 ETH"
         );
 
-        safeMint(msg.sender, currentId);
-
-        _stoneOf[msg.sender].tokenId = currentId;
-        currentId++;
+        _mintStone(msg.sender);
     }
 
     function deleteStone(address stoneOwner, uint256 _tokenId)
@@ -108,5 +105,12 @@ contract StoneToken is NFTTemplate {
         });
 
         _stoneOf[msg.sender] = stone;
+    }
+
+    function _mintStone(address tokenOwner) private {
+        safeMint(tokenOwner, currentId);
+
+        _stoneOf[tokenOwner].tokenId = currentId;
+        currentId++;
     }
 }
