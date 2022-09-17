@@ -194,7 +194,7 @@ contract PokemonToken is NFTTemplate {
         );
 
         StoneType _stoneType = stoneToken.stoneType(msg.sender);
-        stoneToken.deleteStone(msg.sender, stoneToken.stoneId(msg.sender));
+        stoneToken.deleteStone(stoneToken.stoneId(msg.sender));
 
         if (_stoneType == StoneType.Leaf) {
             return PokemonsNum.Vileplume;
