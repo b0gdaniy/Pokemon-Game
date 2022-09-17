@@ -28,7 +28,7 @@ contract NFTTemplate is ERC721, Ownable {
         ERC721(_name, _symbol)
     {}
 
-    function safeMint(address to, uint256 tokenId) public onlyOwner {
+    function safeMint(address to, uint256 tokenId) public virtual onlyOwner {
         _safeMint(to, tokenId);
     }
 
