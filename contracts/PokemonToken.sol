@@ -49,7 +49,7 @@ contract PokemonToken is NFTTemplate {
             "Sending amount must be more than 0.01 ETH"
         );
 
-        _mintToken(msg.sender);
+        _mintPokemonToken(msg.sender);
     }
 
     function createPokemon(uint256 _tokenId)
@@ -86,7 +86,7 @@ contract PokemonToken is NFTTemplate {
 
         _deletePokemon(msg.sender, _tokenId);
 
-        _mintToken(msg.sender);
+        _mintPokemonToken(msg.sender);
 
         _createPokemon(_currentTokenId - 1, _index, _stage + 1, currentLevel);
     }
@@ -217,7 +217,7 @@ contract PokemonToken is NFTTemplate {
         delete _pokemonOf[pokemonOwner][_tokenId];
     }
 
-    function _mintToken(address to) private {
+    function _mintPokemonToken(address to) private {
         safeMint(to, _currentTokenId);
         _currentTokenId++;
     }
