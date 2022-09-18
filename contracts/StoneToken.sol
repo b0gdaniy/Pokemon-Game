@@ -10,7 +10,7 @@ contract StoneToken is NFTTemplate {
         StoneType stoneType;
     }
 
-    uint256 public constant STONE_PRICE = 0.01 ether;
+    uint256 public constant STONE_PRICE = 0.5 ether;
     uint256 private currentId;
     mapping(address => Stone) private _stoneOf;
 
