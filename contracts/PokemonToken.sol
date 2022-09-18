@@ -4,10 +4,12 @@ pragma solidity ^0.8.16;
 import "./NFTTemplate.sol";
 import "./PokemonLevelToken.sol";
 import "./StoneToken.sol";
+import "./PokemonNames.sol";
 
 contract PokemonToken is NFTTemplate {
     PokemonLevelToken public lvlToken;
     StoneToken public stoneToken;
+    PokemonNames public pokemonNames_;
 
     struct Pokemon {
         string name;
@@ -18,11 +20,14 @@ contract PokemonToken is NFTTemplate {
     uint256 internal _currentTokenId;
     mapping(address => mapping(uint256 => Pokemon)) internal _pokemonOf;
 
-    constructor(PokemonLevelToken _lvlToken, StoneToken _stoneToken)
-        NFTTemplate("Pokemon", "PKMN")
-    {
+    constructor(
+        PokemonLevelToken _lvlToken,
+        StoneToken _stoneToken,
+        PokemonNames _pokemonNames
+    ) NFTTemplate("Pokemon", "PKMN") {
         lvlToken = _lvlToken;
         stoneToken = _stoneToken;
+        pokemonNames_ = _pokemonNames;
     }
 
     receive() external payable {
@@ -69,50 +74,15 @@ contract PokemonToken is NFTTemplate {
 
     function pokemonNames(PokemonsNum _index, uint256 _stage)
         public
-        pure
+        view
         returns (string memory)
     {
-        string[5] memory firstStageNames = [
-            "Bulbasaur",
-            "Charmander",
-            "Squirtle",
-            "Oddish",
-            "Poliwag"
-        ];
-        string[5] memory secondStageNames = [
-            "Ivysaur",
-            "Charmeleon",
-            "Wartortle",
-            "Gloom",
-            "Poliwhirl"
-        ];
-        string[7] memory thirdStageNames = [
-            "Venusaur",
-            "Charizard",
-            "Blastoise",
-            "Vileplume",
-            "Poliwrath",
-            "Bellossom",
-            "Politoed"
-        ];
-
         return
-            _stage == 2 ? secondStageNames[uint256(_index)] : _stage == 3
-                ? thirdStageNames[uint256(_index)]
-                : firstStageNames[uint256(_index)];
-    }
-
-    function evoPrice(PokemonsNum _index, uint256 _stage)
-        public
-        pure
-        returns (uint256)
-    {
-        return
-            !_isStraightFlowEvo(_index, _stage) ? 0 : _stage == 1
-                ? 20
-                : _stage == 2
-                ? 40
-                : 5;
+            _stage == 2
+                ? pokemonNames_.secondStageNames(uint256(_index))
+                : _stage == 3
+                ? pokemonNames_.thirdStageNames(uint256(_index))
+                : pokemonNames_.firstStageNames(uint256(_index));
     }
 
     function _createPokemon(
@@ -123,8 +93,14 @@ contract PokemonToken is NFTTemplate {
         require(ownerOf(_tokenId) == msg.sender, "You don't have this PKMN");
         //v
 
-        if (evoPrice(_index, _stage) > 0) {
-            _straightFlowEvo(pokemonLvl(), evoPrice(_index, _stage));
+        uint256 evoPrice = !_isStraightFlowEvo(_index, _stage) ? 0 : _stage == 1
+            ? 20
+            : _stage == 2
+            ? 40
+            : 5;
+
+        if (evoPrice > 0) {
+            _straightFlowEvo(pokemonLvl(), evoPrice);
             //v
         } else {
             _index = _stoneEvo();
