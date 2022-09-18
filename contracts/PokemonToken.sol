@@ -218,7 +218,7 @@ contract PokemonToken is NFTTemplate {
     }
 
     function _mintPokemonToken(address to) private {
-        safeMint(to, _currentTokenId);
+        _safeMint(to, _currentTokenId);
         _currentTokenId++;
     }
 
