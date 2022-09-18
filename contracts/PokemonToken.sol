@@ -17,9 +17,9 @@ contract PokemonToken is NFTTemplate {
     }
 
     uint256 public constant TOKEN_PRICE = 0.01 ether;
-    uint256 public constant CREATE_POKEMON_PRICE = 0.05 ether;
-    uint256 public constant STAGE_ONE_POKEMON_PRICE = 0.20 ether;
-    uint256 public constant STAGE_TWO_POKEMON_PRICE = 0.40 ether;
+    uint256 public constant CREATE_POKEMON_LEVEL = 5;
+    uint256 public constant STAGE_ONE_POKEMON_LEVEL = 20;
+    uint256 public constant STAGE_TWO_POKEMON_LEVEL = 40;
 
     uint256 internal _currentTokenId;
     mapping(address => mapping(uint256 => Pokemon)) internal _pokemonOf;
@@ -67,7 +67,7 @@ contract PokemonToken is NFTTemplate {
         //v
         uint256 _pokemonLvl = pokemonLvl();
         require(_pokemonLvl > 0, "You don't have PLVL tokens");
-        _createPokemon(_tokenId, PokemonsNum(random(5)), 1, _pokemonLvl);
+        _createPokemon(_tokenId, PokemonsNum(random(5)), 0, _pokemonLvl);
     }
 
     function createPokemonWithIndexAndStage(
@@ -105,7 +105,7 @@ contract PokemonToken is NFTTemplate {
     }
 
     function pokemonLvl() public view returns (uint256) {
-        return lvlToken.balanceOf(msg.sender);
+        return lvlToken.balanceOf(msg.sender) / _lvlTokensMultiplier();
     }
 
     function myPokemon(uint256 _tokenId) public view returns (Pokemon memory) {
@@ -158,11 +158,11 @@ contract PokemonToken is NFTTemplate {
         if (!_isStraightFlowEvo(_index, _stage)) {
             return 0;
         } else if (_stage == 1) {
-            return STAGE_ONE_POKEMON_PRICE;
+            return STAGE_ONE_POKEMON_LEVEL;
         } else if (_stage == 2) {
-            return STAGE_TWO_POKEMON_PRICE;
+            return STAGE_TWO_POKEMON_LEVEL;
         } else {
-            return CREATE_POKEMON_PRICE;
+            return CREATE_POKEMON_LEVEL;
         }
     }
 
@@ -172,7 +172,10 @@ contract PokemonToken is NFTTemplate {
         uint256 _stage,
         uint256 _lvl
     ) internal {
-        require(ownerOf(_tokenId) == msg.sender, "You don't have PKMN token");
+        require(
+            ownerOf(_tokenId) == msg.sender,
+            "You don't have this PKMN token"
+        );
         //v
 
         uint256 _evoPrice = evoPrice(_index, _stage);
@@ -198,7 +201,7 @@ contract PokemonToken is NFTTemplate {
     function _straightFlowEvo(uint256 level, uint256 price) private {
         require(level >= price, "You need more level to evolve");
         //v
-        lvlToken.burn(price);
+        lvlToken.burn(price * _lvlTokensMultiplier());
         //v
     }
 
@@ -240,6 +243,10 @@ contract PokemonToken is NFTTemplate {
     function _mintPokemonToken(address to) private {
         _safeMint(to, _currentTokenId);
         _currentTokenId++;
+    }
+
+    function _lvlTokensMultiplier() private view returns (uint256) {
+        return 10**lvlToken.decimals();
     }
 
     function _isStraightFlowEvo(PokemonsNum _index, uint256 _stage)
