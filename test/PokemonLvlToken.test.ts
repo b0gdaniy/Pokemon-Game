@@ -39,6 +39,17 @@ describe("PokemonLevelToken", async () => {
 			.to.changeTokenBalance(pokemonLevelToken, deployer.address, oneWei);
 	})
 
+	it("burned correctly", async () => {
+		const { pokemonLevelToken, deployer, customer } = await loadFixture(deploy);
+
+		const wei25 = 25;
+
+		await (await pokemonLevelToken.mint(deployer.address, wei25)).wait();
+
+		await expect(() => pokemonLevelToken.burn(wei25))
+			.to.changeTokenBalance(pokemonLevelToken, deployer.address, -wei25);
+	})
+
 	it("received correctly", async () => {
 		const { pokemonLevelToken, deployer, customer } = await loadFixture(deploy);
 
