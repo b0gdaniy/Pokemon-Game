@@ -10,32 +10,27 @@ contract StoneToken is NFTTemplate {
         StoneType stoneType;
     }
 
-    uint256 public constant STONE_PRICE = 0.5 ether;
     uint256 private currentId;
     mapping(address => Stone) private _stoneOf;
 
     modifier stoneExists(address stoneOwner) {
-        string memory _name = _stoneOf[stoneOwner].name;
         require(
-            bytes(_name).length > 0,
-            "This address doesn't have Stone token"
+            bytes(_stoneOf[stoneOwner].name).length > 0,
+            "Address haven't STN"
         );
 
         _;
     }
 
     modifier isNotMinted(address tokenOwner) {
-        require(balanceOf(tokenOwner) == 0, "You already have stone token");
+        require(balanceOf(tokenOwner) == 0, "You already have STN");
         _;
     }
 
     constructor() NFTTemplate("Stone", "STN") {}
 
     receive() external payable {
-        require(
-            msg.value >= STONE_PRICE,
-            "The amount sent must be equal or greater than 0.5 ETH"
-        );
+        require(msg.value >= 0.5 ether, "Amount must >= 0.5 ETH");
 
         _mintStone(msg.sender);
     }
@@ -50,9 +45,7 @@ contract StoneToken is NFTTemplate {
     }
 
     function deleteStone(uint256 _tokenId) public stoneExists(tx.origin) {
-        uint256 tokenId = _stoneOf[tx.origin].tokenId;
-
-        require(tokenId == _tokenId, "You are not an owner of this tokenId");
+        require(_stoneOf[tx.origin].tokenId == _tokenId, "Not an owner");
 
         _burn(_tokenId);
 
@@ -109,21 +102,14 @@ contract StoneToken is NFTTemplate {
     }
 
     function _createStone(StoneType _index) internal {
-        require(balanceOf(msg.sender) > 0, "You don't have any STN tokens");
+        require(balanceOf(msg.sender) > 0, "You haven't STN");
         require(
             bytes(_stoneOf[msg.sender].name).length == 0,
-            "You already have stone"
+            "You already have Stone"
         );
 
-        uint256 _tokenId = _stoneOf[msg.sender].tokenId;
-
-        Stone memory stone = Stone({
-            tokenId: _tokenId,
-            name: stoneNames(_index),
-            stoneType: _index
-        });
-
-        _stoneOf[msg.sender] = stone;
+        _stoneOf[msg.sender].name = stoneNames(_index);
+        _stoneOf[msg.sender].stoneType = _index;
     }
 
     function _mintStone(address tokenOwner) private isNotMinted(tokenOwner) {

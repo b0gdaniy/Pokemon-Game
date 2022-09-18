@@ -81,12 +81,12 @@ describe("StoneToken", async () => {
 			await expect(deployer.sendTransaction({
 				to: stoneToken.address,
 				value: ethers.utils.parseEther('0.001')
-			})).to.be.revertedWith("The amount sent must be equal or greater than 0.5 ETH");
+			})).to.be.revertedWith("Amount must >= 0.5 ETH");
 
 			await expect(customer.sendTransaction({
 				to: stoneToken.address,
 				value: ethers.utils.parseEther('0.001')
-			})).to.be.revertedWith("The amount sent must be equal or greater than 0.5 ETH");
+			})).to.be.revertedWith("Amount must >= 0.5 ETH");
 		})
 	})
 
@@ -102,9 +102,9 @@ describe("StoneToken", async () => {
 			const { stoneToken, deployer, customer } = await loadFixture(deploy);
 
 			await expect(stoneToken.createStone())
-				.to.be.revertedWith("You don't have any STN tokens");
+				.to.be.revertedWith("You haven't STN");
 			await expect(stoneToken.connect(customer).createStone())
-				.to.be.revertedWith("You don't have any STN tokens");
+				.to.be.revertedWith("You haven't STN");
 
 			await deployer.sendTransaction({
 				to: stoneToken.address,
@@ -122,9 +122,9 @@ describe("StoneToken", async () => {
 			await (await stoneToken.connect(customer).createStone()).wait();
 
 			await expect(stoneToken.createStoneWithIndex(num))
-				.to.be.revertedWith("You already have stone");
+				.to.be.revertedWith("You already have Stone");
 			await expect(stoneToken.connect(customer).createStone())
-				.to.be.revertedWith("You already have stone");
+				.to.be.revertedWith("You already have Stone");
 
 			const deployerStoneType = await stoneToken.stoneType(deployer.address);
 			const customerStoneType = await stoneToken.stoneType(customer.address);
@@ -151,7 +151,7 @@ describe("StoneToken", async () => {
 			await expect(deployer.sendTransaction({
 				to: stoneToken.address,
 				value: ethers.utils.parseEther('0.5')
-			})).to.be.revertedWith("You already have stone token");
+			})).to.be.revertedWith("You already have STN");
 
 			await customer.sendTransaction({
 				to: stoneToken.address,
@@ -161,7 +161,7 @@ describe("StoneToken", async () => {
 			await expect(customer.sendTransaction({
 				to: stoneToken.address,
 				value: ethers.utils.parseEther('0.5')
-			})).to.be.revertedWith("You already have stone token");
+			})).to.be.revertedWith("You already have STN");
 		})
 
 		it("mint => create => delete => mint", async () => {
@@ -171,11 +171,11 @@ describe("StoneToken", async () => {
 				to: stoneToken.address,
 				value: ethers.utils.parseEther('0.5')
 			});
-			await expect(stoneToken.safeMint(deployer.address, 0)).to.be.revertedWith("You already have stone token");
+			await expect(stoneToken.safeMint(deployer.address, 0)).to.be.revertedWith("You already have STN");
 			await expect(deployer.sendTransaction({
 				to: stoneToken.address,
 				value: ethers.utils.parseEther('0.5')
-			})).to.be.revertedWith("You already have stone token");
+			})).to.be.revertedWith("You already have STN");
 
 			await customer.sendTransaction({
 				to: stoneToken.address,
@@ -184,29 +184,29 @@ describe("StoneToken", async () => {
 			await expect(customer.sendTransaction({
 				to: stoneToken.address,
 				value: ethers.utils.parseEther('0.5')
-			})).to.be.revertedWith("You already have stone token");
+			})).to.be.revertedWith("You already have STN");
 
 			const _stoneType = 2;
 
 			await (await stoneToken.createStoneWithIndex(_stoneType)).wait();
 			await expect(stoneToken.createStoneWithIndex(_stoneType))
-				.to.be.revertedWith("You already have stone");
+				.to.be.revertedWith("You already have Stone");
 
 			await (await stoneToken.connect(customer).createStone()).wait();
 			await expect(stoneToken.connect(customer).createStone())
-				.to.be.revertedWith("You already have stone");
+				.to.be.revertedWith("You already have Stone");
 
 			await expect(stoneToken.deleteStone(1))
-				.to.be.revertedWith("You are not an owner of this tokenId");
+				.to.be.revertedWith("Not an owner");
 			await (await stoneToken.deleteStone(0)).wait();
 			await expect(stoneToken.stoneType(deployer.address))
-				.to.be.revertedWith("This address doesn't have Stone token");
+				.to.be.revertedWith("Address haven't STN");
 
 			await expect(stoneToken.connect(customer).deleteStone(0))
-				.to.be.revertedWith("You are not an owner of this tokenId");
+				.to.be.revertedWith("Not an owner");
 			await (await stoneToken.connect(customer).deleteStone(1)).wait();
 			await expect(stoneToken.connect(customer).stoneType(customer.address))
-				.to.be.revertedWith("This address doesn't have Stone token");
+				.to.be.revertedWith("Address haven't STN");
 
 			await expect(() => deployer.sendTransaction({
 				to: stoneToken.address,
@@ -240,17 +240,17 @@ describe("StoneToken", async () => {
 			await (await stoneToken.connect(customer).createStone()).wait();
 
 			await expect(stoneToken.connect(deployer).deleteStone(1))
-				.to.be.revertedWith("You are not an owner of this tokenId");
+				.to.be.revertedWith("Not an owner");
 			await expect(stoneToken.connect(customer).deleteStone(0))
-				.to.be.revertedWith("You are not an owner of this tokenId");
+				.to.be.revertedWith("Not an owner");
 
 			await (await stoneToken.deleteStone(0)).wait();
 			await expect(stoneToken.stoneType(deployer.address))
-				.to.be.revertedWith("This address doesn't have Stone token");
+				.to.be.revertedWith("Address haven't STN");
 
 			await (await stoneToken.connect(customer).deleteStone(1)).wait();
 			await expect(stoneToken.connect(customer).stoneType(customer.address))
-				.to.be.revertedWith("This address doesn't have Stone token");
+				.to.be.revertedWith("Address haven't STN");
 		})
 	})
 
