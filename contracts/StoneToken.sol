@@ -34,7 +34,7 @@ contract StoneToken is NFTTemplate {
     receive() external payable {
         require(
             msg.value >= STONE_PRICE,
-            "The amount sent must be equal or greater than 0.01 ETH"
+            "The amount sent must be equal or greater than 0.5 ETH"
         );
 
         _mintStone(msg.sender);

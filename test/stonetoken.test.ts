@@ -50,15 +50,15 @@ describe("StoneToken", async () => {
 
 			await expect(() => deployer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			})).to.changeEtherBalance
-				(stoneToken.address, ethers.utils.parseEther('0.01'));
+				(stoneToken.address, ethers.utils.parseEther('0.5'));
 
 			await expect(() => customer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			})).to.changeEtherBalance
-				(stoneToken.address, ethers.utils.parseEther('0.01'));
+				(stoneToken.address, ethers.utils.parseEther('0.5'));
 		})
 
 		it("created token after received() correctly", async () => {
@@ -66,27 +66,27 @@ describe("StoneToken", async () => {
 
 			await expect(() => deployer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			})).to.changeTokenBalance(stoneToken, deployer.address, 1);
 
 			await expect(() => customer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			})).to.changeTokenBalance(stoneToken, customer.address, 1);
 		})
 
-		it("received >0.01 eth correctly", async () => {
+		it("received >0.5 eth correctly", async () => {
 			const { stoneToken, deployer, customer } = await loadFixture(deploy);
 
 			await expect(deployer.sendTransaction({
 				to: stoneToken.address,
 				value: ethers.utils.parseEther('0.001')
-			})).to.be.revertedWith("The amount sent must be equal or greater than 0.01 ETH");
+			})).to.be.revertedWith("The amount sent must be equal or greater than 0.5 ETH");
 
 			await expect(customer.sendTransaction({
 				to: stoneToken.address,
 				value: ethers.utils.parseEther('0.001')
-			})).to.be.revertedWith("The amount sent must be equal or greater than 0.01 ETH");
+			})).to.be.revertedWith("The amount sent must be equal or greater than 0.5 ETH");
 		})
 	})
 
@@ -103,12 +103,12 @@ describe("StoneToken", async () => {
 
 			await deployer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			});
 
 			await customer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			});
 
 			const num = 3;
@@ -137,22 +137,22 @@ describe("StoneToken", async () => {
 
 			await deployer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			});
 
 			await expect(deployer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			})).to.be.revertedWith("You already have stone token");
 
 			await customer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			});
 
 			await expect(customer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			})).to.be.revertedWith("You already have stone token");
 		})
 
@@ -161,21 +161,21 @@ describe("StoneToken", async () => {
 
 			await deployer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			});
 			await expect(stoneToken.safeMint(deployer.address, 0)).to.be.revertedWith("You already have stone token");
 			await expect(deployer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			})).to.be.revertedWith("You already have stone token");
 
 			await customer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			});
 			await expect(customer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			})).to.be.revertedWith("You already have stone token");
 
 			const _stoneType = 2;
@@ -202,13 +202,13 @@ describe("StoneToken", async () => {
 
 			await expect(() => deployer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			}))
 				.to.changeTokenBalance(stoneToken, deployer.address, 1);
 
 			await expect(() => customer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			}))
 				.to.changeTokenBalance(stoneToken, customer.address, 1);
 		})
@@ -218,12 +218,12 @@ describe("StoneToken", async () => {
 
 			await deployer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			});
 
 			await customer.sendTransaction({
 				to: stoneToken.address,
-				value: ethers.utils.parseEther('0.01')
+				value: ethers.utils.parseEther('0.5')
 			});
 
 			const _stoneType = 1;
