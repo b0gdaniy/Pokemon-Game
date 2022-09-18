@@ -20,8 +20,8 @@ const config: HardhatUserConfig = {
     }
   },
   gasReporter: {
-    enabled: true,
-    currency: 'ETH'
+    enabled: false,
+    currency: 'USD'
   }
 };
 
