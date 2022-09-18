@@ -101,6 +101,11 @@ describe("StoneToken", async () => {
 		it("created stone correctly", async () => {
 			const { stoneToken, deployer, customer } = await loadFixture(deploy);
 
+			await expect(stoneToken.createStone())
+				.to.be.revertedWith("You don't have any STN tokens");
+			await expect(stoneToken.connect(customer).createStone())
+				.to.be.revertedWith("You don't have any STN tokens");
+
 			await deployer.sendTransaction({
 				to: stoneToken.address,
 				value: ethers.utils.parseEther('0.5')
@@ -130,6 +135,9 @@ describe("StoneToken", async () => {
 
 			expect(await stoneToken.connect(customer).stoneNames(customerStoneType)).to.eq(stoneTypes[customerStoneType]);
 			expect(await stoneToken.connect(customer).stoneNameOf(customer.address)).to.eq(stoneTypes[customerStoneType]);
+
+			expect(await stoneToken.stoneId(deployer.address)).to.eq(0);
+			expect(await stoneToken.stoneId(customer.address)).to.eq(1);
 		})
 
 		it("minted stone once", async () => {
