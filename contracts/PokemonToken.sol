@@ -11,32 +11,12 @@ contract PokemonToken is NFTTemplate {
 
     struct Pokemon {
         string name;
-        PokemonsNum index;
-        uint256 level;
         uint256 stage;
+        PokemonsNum index;
     }
-
-    uint256 public constant TOKEN_PRICE = 0.01 ether;
-    uint256 public constant CREATE_POKEMON_LEVEL = 5;
-    uint256 public constant STAGE_ONE_POKEMON_LEVEL = 20;
-    uint256 public constant STAGE_TWO_POKEMON_LEVEL = 40;
 
     uint256 internal _currentTokenId;
     mapping(address => mapping(uint256 => Pokemon)) internal _pokemonOf;
-
-    modifier lvlUpdate(uint256 _tokenId) {
-        uint256 _pokemonLvl = pokemonLvl();
-        _pokemonOf[msg.sender][_tokenId].level = _pokemonLvl;
-
-        _;
-        //v
-    }
-
-    modifier reqOwner(uint256 _tokenId) {
-        require(ownerOf(_tokenId) == msg.sender, "You don't have PKMN token");
-        //v
-        _;
-    }
 
     constructor(PokemonLevelToken _lvlToken, StoneToken _stoneToken)
         NFTTemplate("Pokemon", "PKMN")
@@ -46,62 +26,37 @@ contract PokemonToken is NFTTemplate {
     }
 
     receive() external payable {
-        require(
-            msg.value >= TOKEN_PRICE,
-            "The amount sent must be equal or greater than 0.01 ETH"
-        );
+        require(msg.value >= 0.01 ether, "Amount must >= 0.01 ETH");
         //v
 
         _mintPokemonToken(msg.sender);
     }
 
-    function createPokemon(uint256 _tokenId)
-        external
-        reqOwner(_tokenId)
-        lvlUpdate(_tokenId)
-    {
+    function createPokemon(uint256 _tokenId) external {
+        require(ownerOf(_tokenId) == msg.sender, "You haven't PKMN");
         require(
             _compareStrings(_pokemonOf[msg.sender][_tokenId].name, ""),
             "You already created a pokemon"
         );
         //v
-        uint256 _pokemonLvl = pokemonLvl();
-        require(_pokemonLvl > 0, "You don't have PLVL tokens");
-        _createPokemon(_tokenId, PokemonsNum(random(5)), 0, _pokemonLvl);
+        require(pokemonLvl() > 0, "You haven't PLVL");
+        _createPokemon(_tokenId, PokemonsNum(random(5)), 0);
     }
 
-    function createPokemonWithIndexAndStage(
-        uint256 _tokenId,
-        uint256 _index,
-        uint256 _stage,
-        uint256 _lvl
-    ) external onlyOwner {
-        _createPokemon(_tokenId, PokemonsNum(_index), _stage, _lvl);
-    }
+    function evolution(uint256 _tokenId) external {
+        require(ownerOf(_tokenId) == msg.sender, "You haven't PKMN");
 
-    function evolution(uint256 _tokenId)
-        external
-        reqOwner(_tokenId)
-        lvlUpdate(_tokenId)
-    {
-        Pokemon memory pokemon = myPokemon(_tokenId);
-
-        uint256 _stage = pokemon.stage;
-        require(_stage < 3, "Your pokemon can no longer evolve");
+        uint256 _stage = myPokemon(_tokenId).stage;
+        require(_stage < 3, "Pokemon can no longer evolve");
         //v
 
-        PokemonsNum _index = pokemon.index;
-        uint256 currentLevel = pokemon.level;
+        PokemonsNum _index = myPokemon(_tokenId).index;
 
         _deletePokemon(msg.sender, _tokenId);
 
         _mintPokemonToken(msg.sender);
 
-        _createPokemon(_currentTokenId - 1, _index, _stage + 1, currentLevel);
-    }
-
-    function currentTokenId() public view returns (uint256) {
-        return _currentTokenId;
+        _createPokemon(_currentTokenId - 1, _index, _stage + 1);
     }
 
     function pokemonLvl() public view returns (uint256) {
@@ -141,12 +96,10 @@ contract PokemonToken is NFTTemplate {
             "Politoed"
         ];
 
-        if (_stage == 2) {
-            return secondStageNames[uint256(_index)];
-        } else if (_stage == 3) {
-            return thirdStageNames[uint256(_index)];
-        }
-        return firstStageNames[uint256(_index)];
+        return
+            _stage == 2 ? secondStageNames[uint256(_index)] : _stage == 3
+                ? thirdStageNames[uint256(_index)]
+                : firstStageNames[uint256(_index)];
     }
 
     function evoPrice(PokemonsNum _index, uint256 _stage)
@@ -154,52 +107,37 @@ contract PokemonToken is NFTTemplate {
         pure
         returns (uint256)
     {
-        //v
-        if (!_isStraightFlowEvo(_index, _stage)) {
-            return 0;
-        } else if (_stage == 1) {
-            return STAGE_ONE_POKEMON_LEVEL;
-        } else if (_stage == 2) {
-            return STAGE_TWO_POKEMON_LEVEL;
-        } else {
-            return CREATE_POKEMON_LEVEL;
-        }
+        return
+            !_isStraightFlowEvo(_index, _stage) ? 0 : _stage == 1
+                ? 20
+                : _stage == 2
+                ? 40
+                : 5;
     }
 
     function _createPokemon(
         uint256 _tokenId,
         PokemonsNum _index,
-        uint256 _stage,
-        uint256 _lvl
+        uint256 _stage
     ) internal {
-        require(
-            ownerOf(_tokenId) == msg.sender,
-            "You don't have this PKMN token"
-        );
+        require(ownerOf(_tokenId) == msg.sender, "You don't have this PKMN");
         //v
 
-        uint256 _evoPrice = evoPrice(_index, _stage);
-
-        if (_evoPrice > 0) {
-            _straightFlowEvo(_lvl, _evoPrice);
+        if (evoPrice(_index, _stage) > 0) {
+            _straightFlowEvo(pokemonLvl(), evoPrice(_index, _stage));
             //v
         } else {
             _index = _stoneEvo();
             //v
         }
 
-        Pokemon memory pokemon = Pokemon({
-            name: pokemonNames(_index, _stage),
-            index: _index,
-            level: _lvl,
-            stage: _stage
-        });
-
-        _pokemonOf[msg.sender][_tokenId] = pokemon;
+        _pokemonOf[msg.sender][_tokenId].name = pokemonNames(_index, _stage);
+        _pokemonOf[msg.sender][_tokenId].index = _index;
+        _pokemonOf[msg.sender][_tokenId].stage = _stage;
     }
 
     function _straightFlowEvo(uint256 level, uint256 price) private {
-        require(level >= price, "You need more level to evolve");
+        require(level >= price, "You need more level");
         //v
         lvlToken.burn(price * _lvlTokensMultiplier());
         //v
@@ -208,30 +146,29 @@ contract PokemonToken is NFTTemplate {
     function _stoneEvo() private returns (PokemonsNum) {
         require(
             stoneToken.balanceOf(msg.sender) > 0,
-            "You don't have stone for evolve"
+            "You haven't STN for evolve"
         );
         //v
 
         StoneType _stoneType = stoneToken.stoneType(msg.sender);
         stoneToken.deleteStone(stoneToken.stoneId(msg.sender));
         //v
+        return
+            _stoneType == StoneType.Leaf
+                ? PokemonsNum.Vileplume
+                : _stoneType == StoneType.Sun
+                ? PokemonsNum.Bellosom
+                : _stoneType == StoneType.Water
+                ? PokemonsNum.Poliwrath
+                : PokemonsNum.Politoed;
 
-        if (_stoneType == StoneType.Leaf) {
-            return PokemonsNum.Vileplume;
-        } else if (_stoneType == StoneType.Sun) {
-            return PokemonsNum.Bellosom;
-        } else if (_stoneType == StoneType.Water) {
-            return PokemonsNum.Poliwrath;
-        } else {
-            return PokemonsNum.Politoed;
-        }
         //v
     }
 
     function _deletePokemon(address pokemonOwner, uint256 _tokenId) private {
         require(
             _isApprovedOrOwner(pokemonOwner, _tokenId),
-            "Not an owner of token or approved for it"
+            "Not an owner or approved for"
         );
         //v
         _burn(_tokenId);
@@ -254,15 +191,10 @@ contract PokemonToken is NFTTemplate {
         pure
         returns (bool)
     {
-        if (
+        return
             _stage <= 1 ||
             _index == PokemonsNum.Venusaur ||
             _index == PokemonsNum.Charizard ||
-            _index == PokemonsNum.Blastoise
-        ) {
-            return true;
-        } else {
-            return false;
-        }
+            _index == PokemonsNum.Blastoise;
     }
 }
