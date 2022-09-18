@@ -44,14 +44,7 @@ describe("StoneToken", async () => {
 		})
 	})
 
-	describe("Tokens", async () => {
-		it("minted correctly", async () => {
-			const { stoneToken, deployer } = await loadFixture(deploy);
-
-			await expect(() => stoneToken.safeMint(deployer.address, 1))
-				.to.changeTokenBalance(stoneToken, deployer.address, 1);
-		})
-
+	describe("Receive", async () => {
 		it("received eth correctly", async () => {
 			const { stoneToken, deployer, customer } = await loadFixture(deploy);
 
@@ -68,7 +61,7 @@ describe("StoneToken", async () => {
 				(stoneToken.address, ethers.utils.parseEther('0.01'));
 		})
 
-		it("received eth correctly", async () => {
+		it("created token after received() correctly", async () => {
 			const { stoneToken, deployer, customer } = await loadFixture(deploy);
 
 			await expect(() => deployer.sendTransaction({
@@ -94,6 +87,15 @@ describe("StoneToken", async () => {
 				to: stoneToken.address,
 				value: ethers.utils.parseEther('0.001')
 			})).to.be.revertedWith("The amount sent must be equal or greater than 0.01 ETH");
+		})
+	})
+
+	describe("Tokens", async () => {
+		it("minted correctly", async () => {
+			const { stoneToken, deployer } = await loadFixture(deploy);
+
+			await expect(() => stoneToken.safeMint(deployer.address, 1))
+				.to.changeTokenBalance(stoneToken, deployer.address, 1);
 		})
 
 		it("created stone correctly", async () => {
