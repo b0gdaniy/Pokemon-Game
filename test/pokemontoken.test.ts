@@ -1,7 +1,8 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { PokemonToken, PokemonToken__factory } from "../typechain-types";
+import { PokemonToken, PokemonLevelToken, StoneToken } from "../typechain-types";
+
 
 describe("PokemonToken", async () => {
 
@@ -16,18 +17,18 @@ describe("PokemonToken", async () => {
 		const [deployer, customer] = await ethers.getSigners();
 
 		const PokemonLevelTokenFactory = await ethers.getContractFactory("PokemonLevelToken");
-		const pokemonLevelToken = await PokemonLevelTokenFactory.deploy();
+		const pokemonLevelToken: PokemonLevelToken = await PokemonLevelTokenFactory.deploy();
 		await pokemonLevelToken.deployed();
 
 		const StoneTokenFactory = await ethers.getContractFactory("StoneToken");
-		const stoneToken = await StoneTokenFactory.deploy();
+		const stoneToken: StoneToken = await StoneTokenFactory.deploy();
 		await stoneToken.deployed();
 
 		const PokemonTokenFactory = await ethers.getContractFactory("PokemonToken");
 		const pokemonToken: PokemonToken = await PokemonTokenFactory.deploy(pokemonLevelToken.address, stoneToken.address);
 		await pokemonToken.deployed();
 
-		return { pokemonToken, deployer, customer };
+		return { pokemonToken, pokemonLevelToken, stoneToken, deployer, customer };
 	}
 
 	describe("Deploy", async () => {
@@ -98,152 +99,179 @@ describe("PokemonToken", async () => {
 				.to.changeTokenBalance(pokemonToken, deployer.address, 1);
 		})
 
-		// 		it("created pokemon correctly", async () => {
-		// 			const { pokemonToken, deployer, customer } = await loadFixture(deploy);
+		it("created lvl correctly", async () => {
+			const { pokemonToken, pokemonLevelToken, deployer, customer } = await loadFixture(deploy);
 
-		// 			await deployer.sendTransaction({
-		// 				to: pokemonToken.address,
-		// 				value: ethers.utils.parseEther('0.01')
-		// 			});
+			await customer.sendTransaction({
+				to: pokemonLevelToken.address,
+				value: 1
+			});
 
-		// 			await customer.sendTransaction({
-		// 				to: pokemonToken.address,
-		// 				value: ethers.utils.parseEther('0.01')
-		// 			});
+			await customer.sendTransaction({
+				to: pokemonToken.address,
+				value: ethers.utils.parseEther('0.01')
+			});
 
-		// 			const num = 3;
+			await expect(pokemonToken.connect(customer).createPokemon(0))
+				.to.be.revertedWith("You need more level to evolve");
 
-		// 			await (await pokemonToken.createStoneWithIndex(num)).wait();
-		// 			await (await pokemonToken.connect(customer).createStone()).wait();
+			await customer.sendTransaction({
+				to: pokemonLevelToken.address,
+				value: 4
+			});
 
-		// 			await expect(pokemonToken.createStoneWithIndex(num))
-		// 				.to.be.revertedWith("You already have stone");
-		// 			await expect(pokemonToken.connect(customer).createStone())
-		// 				.to.be.revertedWith("You already have stone");
 
-		// 			const deployerStoneType = await pokemonToken.stoneType(deployer.address);
-		// 			const customerStoneType = await pokemonToken.stoneType(customer.address);
+			expect(await pokemonToken.connect(customer).pokemonLvl())
+				.to.eq(5);
 
-		// 			expect(await pokemonToken.stoneNames(deployerStoneType)).to.eq(stoneTypes[deployerStoneType]);
-		// 			expect(await pokemonToken.stoneNames(deployerStoneType)).to.eq(stoneTypes[num]);
-		// 			expect(await pokemonToken.stoneNameOf(deployer.address)).to.eq(stoneTypes[num]);
+			await expect(pokemonToken.connect(customer).createPokemon(0))
+				.to.changeTokenBalance(pokemonLevelToken, customer.address, -5000000000000000000n)
+		})
 
-		// 			expect(await pokemonToken.connect(customer).stoneNames(customerStoneType)).to.eq(stoneTypes[customerStoneType]);
-		// 			expect(await pokemonToken.connect(customer).stoneNameOf(customer.address)).to.eq(stoneTypes[customerStoneType]);
-		// 		})
+		it("created pokemon correctly", async () => {
+			const { pokemonToken, pokemonLevelToken, deployer, customer } = await loadFixture(deploy);
 
-		// 		it("minted stone once", async () => {
-		// 			const { pokemonToken, deployer, customer } = await loadFixture(deploy);
+			const level100 = 100;
 
-		// 			await deployer.sendTransaction({
-		// 				to: pokemonToken.address,
-		// 				value: ethers.utils.parseEther('0.01')
-		// 			});
+			await customer.sendTransaction({
+				to: pokemonLevelToken.address,
+				value: level100
+			});
 
-		// 			await expect(deployer.sendTransaction({
-		// 				to: pokemonToken.address,
-		// 				value: ethers.utils.parseEther('0.01')
-		// 			})).to.be.revertedWith("You already have stone token");
+			await customer.sendTransaction({
+				to: pokemonToken.address,
+				value: ethers.utils.parseEther('0.01')
+			});
 
-		// 			await customer.sendTransaction({
-		// 				to: pokemonToken.address,
-		// 				value: ethers.utils.parseEther('0.01')
-		// 			});
+			console.log(await pokemonToken.connect(customer).pokemonLvl())
 
-		// 			await expect(customer.sendTransaction({
-		// 				to: pokemonToken.address,
-		// 				value: ethers.utils.parseEther('0.01')
-		// 			})).to.be.revertedWith("You already have stone token");
-		// 		})
+			await (await pokemonToken.connect(customer).createPokemon(0)).wait();
 
-		// 		it("mint => create => delete => mint", async () => {
-		// 			const { pokemonToken, deployer, customer } = await loadFixture(deploy);
+			await expect(pokemonToken.connect(customer).createPokemon(0))
+				.to.be.revertedWith("You already created a pokemon");
 
-		// 			await deployer.sendTransaction({
-		// 				to: pokemonToken.address,
-		// 				value: ethers.utils.parseEther('0.01')
-		// 			});
-		// 			await expect(pokemonToken.safeMint(deployer.address, 0)).to.be.revertedWith("You already have stone token");
-		// 			await expect(deployer.sendTransaction({
-		// 				to: pokemonToken.address,
-		// 				value: ethers.utils.parseEther('0.01')
-		// 			})).to.be.revertedWith("You already have stone token");
+			console.log(await pokemonToken.connect(customer).pokemonLvl())
 
-		// 			await customer.sendTransaction({
-		// 				to: pokemonToken.address,
-		// 				value: ethers.utils.parseEther('0.01')
-		// 			});
-		// 			await expect(customer.sendTransaction({
-		// 				to: pokemonToken.address,
-		// 				value: ethers.utils.parseEther('0.01')
-		// 			})).to.be.revertedWith("You already have stone token");
+			// console.log(await pokemonToken.connect(customer).myPokemon(0))
 
-		// 			const _stoneType = 2;
+			// await expect(pokemonToken.connect(customer).createPokemon(0))
+			// 	.to.be.revertedWith("You already created a pokemon");
 
-		// 			await (await pokemonToken.createStoneWithIndex(_stoneType)).wait();
-		// 			await expect(pokemonToken.createStoneWithIndex(_stoneType))
-		// 				.to.be.revertedWith("You already have stone");
 
-		// 			await (await pokemonToken.connect(customer).createStone()).wait();
-		// 			await expect(pokemonToken.connect(customer).createStone())
-		// 				.to.be.revertedWith("You already have stone");
+		})
 
-		// 			await expect(pokemonToken.deleteStone(1))
-		// 				.to.be.revertedWith("You are not an owner of this tokenId");
-		// 			await (await pokemonToken.deleteStone(0)).wait();
-		// 			await expect(pokemonToken.stoneType(deployer.address))
-		// 				.to.be.revertedWith("This address doesn't have Stone token");
+		// it("minted stone once", async () => {
+		// 	const { pokemonToken, deployer, customer } = await loadFixture(deploy);
 
-		// 			await expect(pokemonToken.connect(customer).deleteStone(0))
-		// 				.to.be.revertedWith("You are not an owner of this tokenId");
-		// 			await (await pokemonToken.connect(customer).deleteStone(1)).wait();
-		// 			await expect(pokemonToken.connect(customer).stoneType(customer.address))
-		// 				.to.be.revertedWith("This address doesn't have Stone token");
+		// 	await deployer.sendTransaction({
+		// 		to: pokemonToken.address,
+		// 		value: ethers.utils.parseEther('0.01')
+		// 	});
 
-		// 			await expect(() => deployer.sendTransaction({
-		// 				to: pokemonToken.address,
-		// 				value: ethers.utils.parseEther('0.01')
-		// 			}))
-		// 				.to.changeTokenBalance(pokemonToken, deployer.address, 1);
+		// 	await expect(deployer.sendTransaction({
+		// 		to: pokemonToken.address,
+		// 		value: ethers.utils.parseEther('0.01')
+		// 	})).to.be.revertedWith("You already have stone token");
 
-		// 			await expect(() => customer.sendTransaction({
-		// 				to: pokemonToken.address,
-		// 				value: ethers.utils.parseEther('0.01')
-		// 			}))
-		// 				.to.changeTokenBalance(pokemonToken, customer.address, 1);
-		// 		})
+		// 	await customer.sendTransaction({
+		// 		to: pokemonToken.address,
+		// 		value: ethers.utils.parseEther('0.01')
+		// 	});
 
-		// 		it("deleted stone correctly", async () => {
-		// 			const { pokemonToken, deployer, customer } = await loadFixture(deploy);
+		// 	await expect(customer.sendTransaction({
+		// 		to: pokemonToken.address,
+		// 		value: ethers.utils.parseEther('0.01')
+		// 	})).to.be.revertedWith("You already have stone token");
+		// })
 
-		// 			await deployer.sendTransaction({
-		// 				to: pokemonToken.address,
-		// 				value: ethers.utils.parseEther('0.01')
-		// 			});
+		// it("mint => create => delete => mint", async () => {
+		// 	const { pokemonToken, deployer, customer } = await loadFixture(deploy);
 
-		// 			await customer.sendTransaction({
-		// 				to: pokemonToken.address,
-		// 				value: ethers.utils.parseEther('0.01')
-		// 			});
+		// 	await deployer.sendTransaction({
+		// 		to: pokemonToken.address,
+		// 		value: ethers.utils.parseEther('0.01')
+		// 	});
+		// 	await expect(pokemonToken.safeMint(deployer.address, 0)).to.be.revertedWith("You already have stone token");
+		// 	await expect(deployer.sendTransaction({
+		// 		to: pokemonToken.address,
+		// 		value: ethers.utils.parseEther('0.01')
+		// 	})).to.be.revertedWith("You already have stone token");
 
-		// 			const _stoneType = 1;
+		// 	await customer.sendTransaction({
+		// 		to: pokemonToken.address,
+		// 		value: ethers.utils.parseEther('0.01')
+		// 	});
+		// 	await expect(customer.sendTransaction({
+		// 		to: pokemonToken.address,
+		// 		value: ethers.utils.parseEther('0.01')
+		// 	})).to.be.revertedWith("You already have stone token");
 
-		// 			await (await pokemonToken.createStoneWithIndex(_stoneType)).wait();
-		// 			await (await pokemonToken.connect(customer).createStone()).wait();
+		// 	const _stoneType = 2;
 
-		// 			await expect(pokemonToken.connect(deployer).deleteStone(1))
-		// 				.to.be.revertedWith("You are not an owner of this tokenId");
-		// 			await expect(pokemonToken.connect(customer).deleteStone(0))
-		// 				.to.be.revertedWith("You are not an owner of this tokenId");
+		// 	await (await pokemonToken.createStoneWithIndex(_stoneType)).wait();
+		// 	await expect(pokemonToken.createStoneWithIndex(_stoneType))
+		// 		.to.be.revertedWith("You already have stone");
 
-		// 			await (await pokemonToken.deleteStone(0)).wait();
-		// 			await expect(pokemonToken.stoneType(deployer.address))
-		// 				.to.be.revertedWith("This address doesn't have Stone token");
+		// 	await (await pokemonToken.connect(customer).createStone()).wait();
+		// 	await expect(pokemonToken.connect(customer).createStone())
+		// 		.to.be.revertedWith("You already have stone");
 
-		// 			await (await pokemonToken.connect(customer).deleteStone(1)).wait();
-		// 			await expect(pokemonToken.connect(customer).stoneType(customer.address))
-		// 				.to.be.revertedWith("This address doesn't have Stone token");
-		// 		})
+		// 	await expect(pokemonToken.deleteStone(1))
+		// 		.to.be.revertedWith("You are not an owner of this tokenId");
+		// 	await (await pokemonToken.deleteStone(0)).wait();
+		// 	await expect(pokemonToken.stoneType(deployer.address))
+		// 		.to.be.revertedWith("This address doesn't have Stone token");
+
+		// 	await expect(pokemonToken.connect(customer).deleteStone(0))
+		// 		.to.be.revertedWith("You are not an owner of this tokenId");
+		// 	await (await pokemonToken.connect(customer).deleteStone(1)).wait();
+		// 	await expect(pokemonToken.connect(customer).stoneType(customer.address))
+		// 		.to.be.revertedWith("This address doesn't have Stone token");
+
+		// 	await expect(() => deployer.sendTransaction({
+		// 		to: pokemonToken.address,
+		// 		value: ethers.utils.parseEther('0.01')
+		// 	}))
+		// 		.to.changeTokenBalance(pokemonToken, deployer.address, 1);
+
+		// 	await expect(() => customer.sendTransaction({
+		// 		to: pokemonToken.address,
+		// 		value: ethers.utils.parseEther('0.01')
+		// 	}))
+		// 		.to.changeTokenBalance(pokemonToken, customer.address, 1);
+		// })
+
+		// it("deleted stone correctly", async () => {
+		// 	const { pokemonToken, deployer, customer } = await loadFixture(deploy);
+
+		// 	await deployer.sendTransaction({
+		// 		to: pokemonToken.address,
+		// 		value: ethers.utils.parseEther('0.01')
+		// 	});
+
+		// 	await customer.sendTransaction({
+		// 		to: pokemonToken.address,
+		// 		value: ethers.utils.parseEther('0.01')
+		// 	});
+
+		// 	const _stoneType = 1;
+
+		// 	await (await pokemonToken.createStoneWithIndex(_stoneType)).wait();
+		// 	await (await pokemonToken.connect(customer).createStone()).wait();
+
+		// 	await expect(pokemonToken.connect(deployer).deleteStone(1))
+		// 		.to.be.revertedWith("You are not an owner of this tokenId");
+		// 	await expect(pokemonToken.connect(customer).deleteStone(0))
+		// 		.to.be.revertedWith("You are not an owner of this tokenId");
+
+		// 	await (await pokemonToken.deleteStone(0)).wait();
+		// 	await expect(pokemonToken.stoneType(deployer.address))
+		// 		.to.be.revertedWith("This address doesn't have Stone token");
+
+		// 	await (await pokemonToken.connect(customer).deleteStone(1)).wait();
+		// 	await expect(pokemonToken.connect(customer).stoneType(customer.address))
+		// 		.to.be.revertedWith("This address doesn't have Stone token");
+		// })
 	})
 
 
