@@ -116,12 +116,10 @@ describe("StoneToken", async () => {
 				value: ethers.utils.parseEther('0.5')
 			});
 
-			const num = 3;
-
-			await (await stoneToken.createStoneWithIndex(num)).wait();
+			await (await stoneToken.createStone()).wait();
 			await (await stoneToken.connect(customer).createStone()).wait();
 
-			await expect(stoneToken.createStoneWithIndex(num))
+			await expect(stoneToken.createStone())
 				.to.be.revertedWith("You already have Stone");
 			await expect(stoneToken.connect(customer).createStone())
 				.to.be.revertedWith("You already have Stone");
@@ -129,9 +127,8 @@ describe("StoneToken", async () => {
 			const deployerStoneType = await stoneToken.stoneType(deployer.address);
 			const customerStoneType = await stoneToken.stoneType(customer.address);
 
-			expect(await stoneToken.stoneNames(deployerStoneType)).to.eq(stoneTypes[deployerStoneType]);
-			expect(await stoneToken.stoneNames(deployerStoneType)).to.eq(stoneTypes[num]);
-			expect(await stoneToken.stoneNameOf(deployer.address)).to.eq(stoneTypes[num]);
+			expect(await stoneToken.connect(customer).stoneNames(deployerStoneType)).to.eq(stoneTypes[deployerStoneType]);
+			expect(await stoneToken.connect(customer).stoneNameOf(deployer.address)).to.eq(stoneTypes[deployerStoneType]);
 
 			expect(await stoneToken.connect(customer).stoneNames(customerStoneType)).to.eq(stoneTypes[customerStoneType]);
 			expect(await stoneToken.connect(customer).stoneNameOf(customer.address)).to.eq(stoneTypes[customerStoneType]);
@@ -186,10 +183,8 @@ describe("StoneToken", async () => {
 				value: ethers.utils.parseEther('0.5')
 			})).to.be.revertedWith("You already have STN");
 
-			const _stoneType = 2;
-
-			await (await stoneToken.createStoneWithIndex(_stoneType)).wait();
-			await expect(stoneToken.createStoneWithIndex(_stoneType))
+			await (await stoneToken.createStone()).wait();
+			await expect(stoneToken.createStone())
 				.to.be.revertedWith("You already have Stone");
 
 			await (await stoneToken.connect(customer).createStone()).wait();
@@ -234,9 +229,7 @@ describe("StoneToken", async () => {
 				value: ethers.utils.parseEther('0.5')
 			});
 
-			const _stoneType = 1;
-
-			await (await stoneToken.createStoneWithIndex(_stoneType)).wait();
+			await (await stoneToken.createStone()).wait();
 			await (await stoneToken.connect(customer).createStone()).wait();
 
 			await expect(stoneToken.connect(deployer).deleteStone(1))

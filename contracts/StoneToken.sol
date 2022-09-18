@@ -39,10 +39,6 @@ contract StoneToken is NFTTemplate {
         _createStone(StoneType(random(4)));
     }
 
-    function createStoneWithIndex(StoneType _index) external onlyOwner {
-        _createStone(_index);
-    }
-
     function stoneType(address stoneOwner) public view returns (StoneType) {
         stnExists(stoneOwner);
         return _stoneOf[stoneOwner].stoneType;
