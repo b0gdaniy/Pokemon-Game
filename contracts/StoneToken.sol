@@ -28,6 +28,7 @@ contract StoneToken is NFTTemplate {
 
     function deleteStone(uint256 _tokenId) public {
         stnExists(tx.origin);
+
         require(_stoneOf[tx.origin].tokenId == _tokenId, "Not an owner");
 
         _burn(_tokenId);
