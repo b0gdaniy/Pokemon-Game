@@ -52,6 +52,20 @@ describe("StoneToken", async () => {
 				.to.changeTokenBalance(stoneToken, deployer.address, 1);
 		})
 
+		it("created stone with 0.01 eth correctly", async () => {
+			const { stoneToken, deployer, customer } = await loadFixture(deploy);
+
+			await expect(deployer.sendTransaction({
+				to: stoneToken.address,
+				value: ethers.utils.parseEther('0.001')
+			})).to.be.revertedWith("The amount sent must be equal or greater than 0.01 ETH")
+
+			await expect(customer.sendTransaction({
+				to: stoneToken.address,
+				value: ethers.utils.parseEther('0.001')
+			})).to.be.revertedWith("The amount sent must be equal or greater than 0.01 ETH")
+		})
+
 		it("created stone correctly", async () => {
 			const { stoneToken, deployer, customer } = await loadFixture(deploy);
 
