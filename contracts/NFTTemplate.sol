@@ -61,7 +61,7 @@ contract NFTTemplate is ERC721, Ownable {
     }
 
     function _compareStrings(string memory x, string memory y)
-        private
+        internal
         pure
         returns (bool)
     {
