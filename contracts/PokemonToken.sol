@@ -20,6 +20,11 @@ contract PokemonToken is NFTTemplate {
     uint256 internal _currentTokenId;
     mapping(address => mapping(uint256 => Pokemon)) internal _pokemonOf;
 
+    modifier isOwnersToken(uint256 _tokenId) {
+        require(ownerOf(_tokenId) == msg.sender, "You haven't this PKMN");
+        _;
+    }
+
     constructor(
         PokemonLevelToken _lvlToken,
         StoneToken _stoneToken,
@@ -38,21 +43,13 @@ contract PokemonToken is NFTTemplate {
     }
 
     function createPokemon(uint256 _tokenId) external {
-        require(ownerOf(_tokenId) == msg.sender, "You haven't PKMN");
-        require(
-            _compareStrings(_pokemonOf[msg.sender][_tokenId].name, ""),
-            "You already created a pokemon"
-        );
-        //v
         require(pokemonLvl() > 0, "You haven't PLVL");
-        _createPokemon(_tokenId, PokemonsNum(random(5)), 0);
+        _createPokemon(_tokenId, PokemonsNum(random(5)), 1);
     }
 
-    function evolution(uint256 _tokenId) external {
-        require(ownerOf(_tokenId) == msg.sender, "You haven't PKMN");
-
+    function evolution(uint256 _tokenId) external isOwnersToken(_tokenId) {
         uint256 _stage = myPokemon(_tokenId).stage;
-        require(_stage < 3, "Pokemon can no longer evolve");
+        require(_stage < 4, "Pokemon can no longer evolve");
         //v
 
         PokemonsNum _index = myPokemon(_tokenId).index;
@@ -68,7 +65,12 @@ contract PokemonToken is NFTTemplate {
         return lvlToken.balanceOf(msg.sender) / _lvlTokensMultiplier();
     }
 
-    function myPokemon(uint256 _tokenId) public view returns (Pokemon memory) {
+    function myPokemon(uint256 _tokenId)
+        public
+        view
+        isOwnersToken(_tokenId)
+        returns (Pokemon memory)
+    {
         return _pokemonOf[msg.sender][_tokenId];
     }
 
@@ -89,22 +91,17 @@ contract PokemonToken is NFTTemplate {
         uint256 _tokenId,
         PokemonsNum _index,
         uint256 _stage
-    ) internal {
-        require(ownerOf(_tokenId) == msg.sender, "You don't have this PKMN");
-        //v
-
+    ) internal isOwnersToken(_tokenId) {
         uint256 evoPrice = !_isStraightFlowEvo(_index, _stage) ? 0 : _stage == 1
-            ? 20
+            ? 5
             : _stage == 2
-            ? 40
-            : 5;
+            ? 20
+            : 40;
 
         if (evoPrice > 0) {
             _straightFlowEvo(pokemonLvl(), evoPrice);
-            //v
         } else {
             _index = _stoneEvo();
-            //v
         }
 
         _pokemonOf[msg.sender][_tokenId].name = pokemonNames(_index, _stage);
