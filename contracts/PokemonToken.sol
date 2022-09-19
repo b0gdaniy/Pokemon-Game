@@ -4,7 +4,7 @@ pragma solidity ^0.8.16;
 import "./NFTTemplate.sol";
 import "./PokemonLevelToken.sol";
 import "./StoneToken.sol";
-import "./PokemonNames.sol";
+import "./IPokemonNames.sol";
 
 /**
  * @title Pokemon Game token
@@ -18,7 +18,7 @@ contract PokemonToken is NFTTemplate {
     /// @dev Added for interaction with STN token contract.
     StoneToken public stoneToken;
     /// @dev Added and on it we can add more pokemon names.
-    PokemonNames public pokemonNames_;
+    IPokemonNames public pokemonNames_;
 
     struct Pokemon {
         string name;
@@ -42,7 +42,7 @@ contract PokemonToken is NFTTemplate {
     constructor(
         PokemonLevelToken _lvlToken,
         StoneToken _stoneToken,
-        PokemonNames _pokemonNames
+        IPokemonNames _pokemonNames
     ) NFTTemplate("Pokemon", "PKMN") {
         lvlToken = _lvlToken;
         stoneToken = _stoneToken;
@@ -111,9 +111,6 @@ contract PokemonToken is NFTTemplate {
         _createPokemon(_currentTokenId - 1, _index, _stage + 1);
     }
 
-    /**
-    
-     */
     function pokemonLvl() public view returns (uint256) {
         return lvlToken.balanceOf(msg.sender) / _lvlTokensMultiplier();
     }

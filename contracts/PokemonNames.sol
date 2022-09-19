@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.16;
+import "./IPokemonNames.sol";
 
-contract PokemonNames {
+contract PokemonNames is IPokemonNames {
     string public name;
 
     constructor(string memory _name) {
