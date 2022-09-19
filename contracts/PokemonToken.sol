@@ -20,11 +20,6 @@ contract PokemonToken is NFTTemplate {
     uint256 internal _currentTokenId;
     mapping(address => mapping(uint256 => Pokemon)) internal _pokemonOf;
 
-    modifier isOwnersToken(uint256 _tokenId) {
-        require(ownerOf(_tokenId) == msg.sender, "You haven't this PKMN");
-        _;
-    }
-
     constructor(
         PokemonLevelToken _lvlToken,
         StoneToken _stoneToken,
@@ -37,20 +32,20 @@ contract PokemonToken is NFTTemplate {
 
     receive() external payable {
         require(msg.value >= 0.01 ether, "Amount must >= 0.01 ETH");
-        //v
 
         _mintPokemonToken(msg.sender);
     }
 
     function createPokemon(uint256 _tokenId) external {
         require(pokemonLvl() > 0, "You haven't PLVL");
+
         _createPokemon(_tokenId, PokemonsNum(random(5)), 1);
     }
 
-    function evolution(uint256 _tokenId) external isOwnersToken(_tokenId) {
+    function evolution(uint256 _tokenId) external {
+        _isOwnerToken(_tokenId);
         uint256 _stage = myPokemon(_tokenId).stage;
         require(_stage < 4, "Pokemon can no longer evolve");
-        //v
 
         PokemonsNum _index = myPokemon(_tokenId).index;
 
@@ -65,14 +60,20 @@ contract PokemonToken is NFTTemplate {
         return lvlToken.balanceOf(msg.sender) / _lvlTokensMultiplier();
     }
 
-    function myPokemon(uint256 _tokenId)
-        public
-        view
-        isOwnersToken(_tokenId)
-        returns (Pokemon memory)
-    {
+    function myPokemon(uint256 _tokenId) public view returns (Pokemon memory) {
+        _isOwnerToken(_tokenId);
         return _pokemonOf[msg.sender][_tokenId];
     }
+
+    ///@dev Needs for unit testing, but for deploy must be deleted
+    // function myPokemonIndex(uint256 _tokenId)
+    //     public
+    //     view
+    //     returns (PokemonsNum)
+    // {
+    //     _isOwnerToken(_tokenId);
+    //     return myPokemon(_tokenId).index;
+    // }
 
     function pokemonNames(PokemonsNum _index, uint256 _stage)
         public
@@ -91,7 +92,8 @@ contract PokemonToken is NFTTemplate {
         uint256 _tokenId,
         PokemonsNum _index,
         uint256 _stage
-    ) internal isOwnersToken(_tokenId) {
+    ) internal {
+        _isOwnerToken(_tokenId);
         uint256 evoPrice = !_isStraightFlowEvo(_index, _stage) ? 0 : _stage == 1
             ? 5
             : _stage == 2
@@ -101,7 +103,7 @@ contract PokemonToken is NFTTemplate {
         if (evoPrice > 0) {
             _straightFlowEvo(pokemonLvl(), evoPrice);
         } else {
-            _index = _stoneEvo();
+            _index = _stoneEvo(_index);
         }
 
         _pokemonOf[msg.sender][_tokenId].name = pokemonNames(_index, _stage);
@@ -111,21 +113,32 @@ contract PokemonToken is NFTTemplate {
 
     function _straightFlowEvo(uint256 level, uint256 price) private {
         require(level >= price, "You need more level");
-        //v
+
         lvlToken.burn(price * _lvlTokensMultiplier());
-        //v
     }
 
-    function _stoneEvo() private returns (PokemonsNum) {
+    function _stoneEvo(PokemonsNum _index) private returns (PokemonsNum) {
         require(
             stoneToken.balanceOf(msg.sender) > 0,
             "You haven't STN for evolve"
         );
-        //v
 
         StoneType _stoneType = stoneToken.stoneType(msg.sender);
+        if (_index == PokemonsNum.Vileplume) {
+            require(
+                _stoneType == StoneType.Leaf || _stoneType == StoneType.Sun,
+                "You dont have type for Oddish"
+            );
+        } else {
+            require(
+                _stoneType == StoneType.Water ||
+                    _stoneType == StoneType.KingsRock,
+                "You dont have type for Poliwag"
+            );
+        }
+
         stoneToken.deleteStone(stoneToken.stoneId(msg.sender));
-        //v
+
         return
             _stoneType == StoneType.Leaf
                 ? PokemonsNum.Vileplume
@@ -134,8 +147,6 @@ contract PokemonToken is NFTTemplate {
                 : _stoneType == StoneType.Water
                 ? PokemonsNum.Poliwrath
                 : PokemonsNum.Politoed;
-
-        //v
     }
 
     function _deletePokemon(address pokemonOwner, uint256 _tokenId) private {
@@ -143,11 +154,10 @@ contract PokemonToken is NFTTemplate {
             _isApprovedOrOwner(pokemonOwner, _tokenId),
             "Not an owner or approved for"
         );
-        //v
+
         _burn(_tokenId);
 
         delete _pokemonOf[pokemonOwner][_tokenId];
-        //v
     }
 
     function _mintPokemonToken(address to) private {
@@ -165,9 +175,13 @@ contract PokemonToken is NFTTemplate {
         returns (bool)
     {
         return
-            _stage <= 1 ||
+            _stage <= 2 ||
             _index == PokemonsNum.Venusaur ||
             _index == PokemonsNum.Charizard ||
             _index == PokemonsNum.Blastoise;
+    }
+
+    function _isOwnerToken(uint256 _tokenId) private view {
+        require(ownerOf(_tokenId) == msg.sender, "You haven't this PKMN");
     }
 }

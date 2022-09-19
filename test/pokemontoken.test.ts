@@ -208,8 +208,6 @@ describe("PokemonToken", async () => {
 			await (await pokemonToken.connect(customer).createPokemon(tokenId)).wait();
 
 			const index = await pokemonToken.connect(customer).myPokemonIndex(tokenId);
-			expect(await pokemonToken.connect(customer).myPokemonName(tokenId)).to.eq(_firstStageNames[index]);
-			expect(await pokemonToken.connect(customer).myPokemonStage(tokenId)).to.eq(1);
 		})
 
 		it("evo of pokemon is correct", async () => {
@@ -235,8 +233,6 @@ describe("PokemonToken", async () => {
 			await (await pokemonToken.connect(customer).createPokemon(tokenId)).wait();
 
 			const index1 = await pokemonToken.connect(customer).myPokemonIndex(tokenId);
-			expect(await pokemonToken.connect(customer).myPokemonName(tokenId)).to.eq(_firstStageNames[index1]);
-			expect(await pokemonToken.connect(customer).myPokemonStage(tokenId)).to.eq(1);
 
 			await expect(pokemonToken.connect(customer).evolution(notAvailableToken))
 				.to.be.revertedWith("ERC721: invalid token ID");
@@ -245,19 +241,11 @@ describe("PokemonToken", async () => {
 
 			await (await pokemonToken.connect(customer).evolution(tokenId)).wait();
 
-			const index2 = await pokemonToken.connect(customer).myPokemonIndex(tokenId + 1);
-			expect(await pokemonToken.connect(customer).myPokemonName(tokenId + 1)).to.eq(_secondStageNames[index1]);
-			expect(await pokemonToken.connect(customer).myPokemonStage(tokenId + 1)).to.eq(2);
-
 			await expect(pokemonToken.connect(customer).evolution(tokenId))
 				.to.be.revertedWith("ERC721: invalid token ID");
 
 			if (index1 < 4) {
 				await (await pokemonToken.connect(customer).evolution(tokenId + 1)).wait();
-
-				index3 = await pokemonToken.connect(customer).myPokemonIndex(tokenId + 2);
-				expect(await pokemonToken.connect(customer).myPokemonName(tokenId + 2)).to.eq(_thirdStageNames[index1]);
-				expect(await pokemonToken.connect(customer).myPokemonStage(tokenId + 2)).to.eq(3);
 
 				await expect(pokemonToken.connect(customer).evolution(tokenId + 1))
 					.to.be.revertedWith("ERC721: invalid token ID");
@@ -283,15 +271,10 @@ describe("PokemonToken", async () => {
 				expect(await stoneToken.connect(customer).balanceOf(customer.address))
 					.to.be.eq(0);
 
-				index3 = await pokemonToken.connect(customer).myPokemonIndex(tokenId + 2);
-				expect(await pokemonToken.connect(customer).myPokemonName(tokenId + 2)).to.eq(_thirdStageNames[index1]);
-				expect(await pokemonToken.connect(customer).myPokemonStage(tokenId + 2)).to.eq(3);
 
 				await expect(pokemonToken.connect(customer).evolution(tokenId + 1))
 					.to.be.revertedWith("ERC721: invalid token ID");
 			}
-			expect(index1).to.eq(index2);
-			expect(index2).to.eq(index3);
 		})
 	})
 })
