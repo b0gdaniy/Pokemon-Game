@@ -212,86 +212,119 @@ describe("PokemonToken", async () => {
 			expect(await pokemonToken.connect(customer).myPokemonStage(tokenId)).to.eq(1);
 		})
 
-		it("evo of pokemon is correct", async () => {
-			const { pokemonToken, stoneToken, pokemonLevelToken, customer } = await loadFixture(deploy);
+		it("straight evo of pokemon is correct", async () => {
+			const { pokemonToken, stoneToken, pokemonLevelToken, deployer, customer } = await loadFixture(deploy);
 
 			let index3;
 
-			await customer.sendTransaction({
+			await deployer.sendTransaction({
 				to: pokemonToken.address,
 				value: ethers.utils.parseEther('0.01')
 			});
 
-			await customer.sendTransaction({
+			await deployer.sendTransaction({
 				to: pokemonLevelToken.address,
 				value: level100
 			});
 
-			await customer.sendTransaction({
+			await (await pokemonToken.createPokemonWithIndex(tokenId, 1)).wait();
+
+			const index1 = await pokemonToken.myPokemonIndex(tokenId);
+			expect(await pokemonToken.myPokemonName(tokenId)).to.eq(_firstStageNames[index1]);
+			expect(await pokemonToken.myPokemonStage(tokenId)).to.eq(1);
+
+			await expect(pokemonToken.evolution(notAvailableToken))
+				.to.be.revertedWith("ERC721: invalid token ID");
+			await expect(pokemonToken.connect(customer).evolution(tokenId))
+				.to.be.revertedWith("You haven't this PKMN");
+
+			await (await pokemonToken.evolution(tokenId)).wait();
+
+			const index2 = await pokemonToken.myPokemonIndex(tokenId + 1);
+			expect(await pokemonToken.myPokemonName(tokenId + 1)).to.eq(_secondStageNames[index1]);
+			expect(await pokemonToken.myPokemonStage(tokenId + 1)).to.eq(2);
+
+			await expect(pokemonToken.evolution(tokenId))
+				.to.be.revertedWith("ERC721: invalid token ID");
+
+			await (await pokemonToken.evolution(tokenId + 1)).wait();
+
+			index3 = await pokemonToken.myPokemonIndex(tokenId + 2);
+			expect(await pokemonToken.myPokemonName(tokenId + 2)).to.eq(_thirdStageNames[index1]);
+			expect(await pokemonToken.myPokemonStage(tokenId + 2)).to.eq(3);
+
+			await expect(pokemonToken.evolution(tokenId + 1))
+				.to.be.revertedWith("ERC721: invalid token ID");
+
+			expect(index1).to.eq(index2);
+			expect(index2).to.eq(index3);
+
+		})
+
+		it("stone evo of pokemon is correct", async () => {
+			const { pokemonToken, stoneToken, pokemonLevelToken, deployer, customer } = await loadFixture(deploy);
+
+			let index3;
+
+			await deployer.sendTransaction({
+				to: pokemonToken.address,
+				value: ethers.utils.parseEther('0.01')
+			});
+
+			await deployer.sendTransaction({
+				to: pokemonLevelToken.address,
+				value: level100
+			});
+
+			await deployer.sendTransaction({
 				to: stoneToken.address,
 				value: ethers.utils.parseEther('0.5')
 			});
 
-			await (await pokemonToken.connect(customer).createPokemon(tokenId)).wait();
+			let vileplume = 3;
 
-			const index1 = await pokemonToken.connect(customer).myPokemonIndex(tokenId);
-			expect(await pokemonToken.connect(customer).myPokemonName(tokenId)).to.eq(_firstStageNames[index1]);
-			expect(await pokemonToken.connect(customer).myPokemonStage(tokenId)).to.eq(1);
+			await (await pokemonToken.createPokemonWithIndex(tokenId, vileplume)).wait();
 
-			await expect(pokemonToken.connect(customer).evolution(notAvailableToken))
+
+			const index1 = await pokemonToken.myPokemonIndex(tokenId);
+			expect(await pokemonToken.myPokemonName(tokenId)).to.eq(_firstStageNames[index1]);
+			expect(await pokemonToken.myPokemonStage(tokenId)).to.eq(1);
+
+			await expect(pokemonToken.evolution(notAvailableToken))
 				.to.be.revertedWith("ERC721: invalid token ID");
-			await expect(pokemonToken.evolution(tokenId))
+			await expect(pokemonToken.connect(customer).evolution(tokenId))
 				.to.be.revertedWith("You haven't this PKMN");
 
-			await (await pokemonToken.connect(customer).evolution(tokenId)).wait();
+			await (await pokemonToken.evolution(tokenId)).wait();
 
-			const index2 = await pokemonToken.connect(customer).myPokemonIndex(tokenId + 1);
-			expect(await pokemonToken.connect(customer).myPokemonName(tokenId + 1)).to.eq(_secondStageNames[index1]);
-			expect(await pokemonToken.connect(customer).myPokemonStage(tokenId + 1)).to.eq(2);
 
-			await expect(pokemonToken.connect(customer).evolution(tokenId))
+			const index2 = await pokemonToken.myPokemonIndex(tokenId + 1);
+			expect(await pokemonToken.myPokemonName(tokenId + 1)).to.eq(_secondStageNames[index1]);
+			expect(await pokemonToken.myPokemonStage(tokenId + 1)).to.eq(2);
+
+			await expect(pokemonToken.evolution(tokenId))
+				.to.be.revertedWith("ERC721: invalid token ID");
+			await expect(pokemonToken.evolution(tokenId + 1))
+				.to.be.revertedWith("Address haven't STN");
+
+			let sun = 0;
+
+			await (await stoneToken.createStoneWithIndexTo(deployer.address, sun)).wait();
+			expect(await stoneToken.balanceOf(deployer.address))
+				.to.be.eq(1);
+
+			await (await pokemonToken.evolution(tokenId + 1)).wait();
+
+			expect(await stoneToken.balanceOf(deployer.address))
+				.to.be.eq(0);
+
+			index3 = await pokemonToken.myPokemonIndex(tokenId + 2);
+			expect(await pokemonToken.myPokemonName(tokenId + 2)).to.eq(_thirdStageNames[index3]);
+			expect(await pokemonToken.myPokemonStage(tokenId + 2)).to.eq(3);
+
+			await expect(pokemonToken.evolution(tokenId + 1))
 				.to.be.revertedWith("ERC721: invalid token ID");
 
-			if (index1 < 4) {
-				await (await pokemonToken.connect(customer).evolution(tokenId + 1)).wait();
-
-				index3 = await pokemonToken.connect(customer).myPokemonIndex(tokenId + 2);
-				expect(await pokemonToken.connect(customer).myPokemonName(tokenId + 2)).to.eq(_thirdStageNames[index1]);
-				expect(await pokemonToken.connect(customer).myPokemonStage(tokenId + 2)).to.eq(3);
-
-				await expect(pokemonToken.connect(customer).evolution(tokenId + 1))
-					.to.be.revertedWith("ERC721: invalid token ID");
-
-			} else {
-				let index;
-				if (index1 == 3) {
-					index = 0;
-				} else {
-					index = 2;
-				}
-
-				await expect(pokemonToken.connect(customer).evolution(tokenId + 1))
-					.to.be.revertedWith("You haven't STN for evolve");
-
-				await (await stoneToken.createStoneWithIndexTo(customer.address, index)).wait();
-
-				expect(await stoneToken.connect(customer).balanceOf(customer.address))
-					.to.be.eq(1);
-
-				await (await pokemonToken.connect(customer).evolution(tokenId + 1)).wait();
-
-				expect(await stoneToken.connect(customer).balanceOf(customer.address))
-					.to.be.eq(0);
-
-				index3 = await pokemonToken.connect(customer).myPokemonIndex(tokenId + 2);
-				expect(await pokemonToken.connect(customer).myPokemonName(tokenId + 2)).to.eq(_thirdStageNames[index1]);
-				expect(await pokemonToken.connect(customer).myPokemonStage(tokenId + 2)).to.eq(3);
-
-				await expect(pokemonToken.connect(customer).evolution(tokenId + 1))
-					.to.be.revertedWith("ERC721: invalid token ID");
-			}
-			expect(index1).to.eq(index2);
-			expect(index2).to.eq(index3);
 		})
 	})
 })

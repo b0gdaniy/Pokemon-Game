@@ -37,7 +37,6 @@ contract PokemonToken is NFTTemplate {
 
     receive() external payable {
         require(msg.value >= 0.01 ether, "Amount must >= 0.01 ETH");
-        //v
 
         _mintPokemonToken(msg.sender);
     }
@@ -47,10 +46,17 @@ contract PokemonToken is NFTTemplate {
         _createPokemon(_tokenId, PokemonsNum(random(5)), 1);
     }
 
+    function createPokemonWithIndex(uint256 _tokenId, uint256 _index)
+        external
+        onlyOwner
+    {
+        require(pokemonLvl() > 0, "You haven't PLVL");
+        _createPokemon(_tokenId, PokemonsNum(_index), 1);
+    }
+
     function evolution(uint256 _tokenId) external isOwnersToken(_tokenId) {
         uint256 _stage = myPokemon(_tokenId).stage;
         require(_stage < 4, "Pokemon can no longer evolve");
-        //v
 
         PokemonsNum _index = myPokemon(_tokenId).index;
 
@@ -72,6 +78,33 @@ contract PokemonToken is NFTTemplate {
         returns (Pokemon memory)
     {
         return _pokemonOf[msg.sender][_tokenId];
+    }
+
+    function myPokemonIndex(uint256 _tokenId)
+        public
+        view
+        isOwnersToken(_tokenId)
+        returns (PokemonsNum)
+    {
+        return myPokemon(_tokenId).index;
+    }
+
+    function myPokemonName(uint256 _tokenId)
+        public
+        view
+        isOwnersToken(_tokenId)
+        returns (string memory)
+    {
+        return myPokemon(_tokenId).name;
+    }
+
+    function myPokemonStage(uint256 _tokenId)
+        public
+        view
+        isOwnersToken(_tokenId)
+        returns (uint256)
+    {
+        return myPokemon(_tokenId).stage;
     }
 
     function pokemonNames(PokemonsNum _index, uint256 _stage)
@@ -101,7 +134,7 @@ contract PokemonToken is NFTTemplate {
         if (evoPrice > 0) {
             _straightFlowEvo(pokemonLvl(), evoPrice);
         } else {
-            _index = _stoneEvo();
+            _index = _stoneEvo(_index);
         }
 
         _pokemonOf[msg.sender][_tokenId].name = pokemonNames(_index, _stage);
@@ -111,21 +144,30 @@ contract PokemonToken is NFTTemplate {
 
     function _straightFlowEvo(uint256 level, uint256 price) private {
         require(level >= price, "You need more level");
-        //v
+
         lvlToken.burn(price * _lvlTokensMultiplier());
-        //v
     }
 
-    function _stoneEvo() private returns (PokemonsNum) {
+    function _stoneEvo(PokemonsNum _index) private returns (PokemonsNum) {
         require(
             stoneToken.balanceOf(msg.sender) > 0,
             "You haven't STN for evolve"
         );
-        //v
 
         StoneType _stoneType = stoneToken.stoneType(msg.sender);
+        if (_index == PokemonsNum.Vileplume) {
+            require(
+                _stoneType == StoneType.Leaf || _stoneType == StoneType.Sun,
+                "You dont have type for Oddish"
+            );
+        } else {
+            require(
+                _stoneType == StoneType.Water ||
+                    _stoneType == StoneType.KingsRock,
+                "You dont have type for Poliwag"
+            );
+        }
         stoneToken.deleteStone(stoneToken.stoneId(msg.sender));
-        //v
         return
             _stoneType == StoneType.Leaf
                 ? PokemonsNum.Vileplume
@@ -134,8 +176,6 @@ contract PokemonToken is NFTTemplate {
                 : _stoneType == StoneType.Water
                 ? PokemonsNum.Poliwrath
                 : PokemonsNum.Politoed;
-
-        //v
     }
 
     function _deletePokemon(address pokemonOwner, uint256 _tokenId) private {
@@ -143,11 +183,9 @@ contract PokemonToken is NFTTemplate {
             _isApprovedOrOwner(pokemonOwner, _tokenId),
             "Not an owner or approved for"
         );
-        //v
         _burn(_tokenId);
 
         delete _pokemonOf[pokemonOwner][_tokenId];
-        //v
     }
 
     function _mintPokemonToken(address to) private {
@@ -165,7 +203,7 @@ contract PokemonToken is NFTTemplate {
         returns (bool)
     {
         return
-            _stage <= 1 ||
+            _stage <= 2 ||
             _index == PokemonsNum.Venusaur ||
             _index == PokemonsNum.Charizard ||
             _index == PokemonsNum.Blastoise;
