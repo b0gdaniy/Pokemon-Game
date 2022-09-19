@@ -6,9 +6,18 @@ import "./PokemonLevelToken.sol";
 import "./StoneToken.sol";
 import "./PokemonNames.sol";
 
+/**
+ * @title Pokemon Game token
+ * @author Bohdan Pukhno
+ * @dev In the Pokemon Game, the user can level up by purchasing level tokens or crafting stone tokens if the user is lucky.
+ * You need to expand the Pokemon Names, Stone Token, and Level Token first, then you can expand the Pokemon Token.
+ */
 contract PokemonToken is NFTTemplate {
+    /// @dev Added for interaction with PLVL token contract.
     PokemonLevelToken public lvlToken;
+    /// @dev Added for interaction with STN token contract.
     StoneToken public stoneToken;
+    /// @dev Added and on it we can add more pokemon names.
     PokemonNames public pokemonNames_;
 
     struct Pokemon {
@@ -20,11 +29,16 @@ contract PokemonToken is NFTTemplate {
     uint256 internal _currentTokenId;
     mapping(address => mapping(uint256 => Pokemon)) internal _pokemonOf;
 
+    /// @dev Needed to check is the `_tokenId` owner is `msg.sender`.
     modifier isOwnersToken(uint256 _tokenId) {
         require(ownerOf(_tokenId) == msg.sender, "You haven't this PKMN");
         _;
     }
 
+    /**
+     * @dev Initializes the contract, setting the deployer as the initial owner.
+     * Setting the token contracts addresses by the parameters passed to it.
+     */
     constructor(
         PokemonLevelToken _lvlToken,
         StoneToken _stoneToken,
@@ -35,17 +49,37 @@ contract PokemonToken is NFTTemplate {
         pokemonNames_ = _pokemonNames;
     }
 
+    /**
+     * @dev Received amount to mint Pokemon Token for `msg.sender`.
+     *
+     * REQUIREMENTS:
+     * - `msg.value` must be equal or grater than 0.01 ETH
+     */
     receive() external payable {
         require(msg.value >= 0.01 ether, "Amount must >= 0.01 ETH");
 
         _mintPokemonToken(msg.sender);
     }
 
+    /**
+     * @dev Creates a pokemon for `msg.sender`, with random Pokemon types. Started from 1st stage.
+     *
+     * REQUIREMENTS:
+     * - `msg.sender` must have PLVL token to create
+     */
     function createPokemon(uint256 _tokenId) external {
         require(pokemonLvl() > 0, "You haven't PLVL");
         _createPokemon(_tokenId, PokemonsNum(random(5)), 1);
     }
 
+    /**
+     * @dev Creates a pokemon for `msg.sender`, with `_index` Pokemon types. Started from 1st stage.
+     * Needs for unit tests.
+     *
+     * REQUIREMENTS:
+     * - `msg.sender` must be an owner of this contract
+     * - `msg.sender` must have PLVL token to create
+     */
     function createPokemonWithIndex(uint256 _tokenId, uint256 _index)
         external
         onlyOwner
@@ -54,6 +88,16 @@ contract PokemonToken is NFTTemplate {
         _createPokemon(_tokenId, PokemonsNum(_index), 1);
     }
 
+    /**
+     * @dev Evolves pokemon for `msg.sender`, with `_index` Pokemon types.
+     * Changed `_stage` to one more
+
+     * Needs for check in unit tests.
+     *
+     * REQUIREMENTS:
+     * - `msg.sender` must be an owner of this contract
+     * - `msg.sender` must have PLVL token to create
+     */
     function evolution(uint256 _tokenId) external isOwnersToken(_tokenId) {
         uint256 _stage = myPokemon(_tokenId).stage;
         require(_stage < 4, "Pokemon can no longer evolve");
@@ -67,6 +111,9 @@ contract PokemonToken is NFTTemplate {
         _createPokemon(_currentTokenId - 1, _index, _stage + 1);
     }
 
+    /**
+    
+     */
     function pokemonLvl() public view returns (uint256) {
         return lvlToken.balanceOf(msg.sender) / _lvlTokensMultiplier();
     }
