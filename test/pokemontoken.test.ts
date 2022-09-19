@@ -38,6 +38,11 @@ describe("PokemonToken", async () => {
 		"Bellossom",
 		"Politoed"
 	];
+
+	const level100 = 100;
+	const tokenId = 0;
+	const notAvailableToken = 50;
+
 	async function deploy() {
 		const [deployer, customer] = await ethers.getSigners();
 
@@ -53,8 +58,10 @@ describe("PokemonToken", async () => {
 		const pokemonNames = await PokemonNamesFactory.deploy("PokemonNames");
 		await pokemonNames.deployed();
 
+		const pokemonNamesAddress: any = pokemonNames.address;
+
 		const PokemonTokenFactory = await ethers.getContractFactory("PokemonToken");
-		const pokemonToken: PokemonToken = await PokemonTokenFactory.deploy(pokemonLevelToken.address, stoneToken.address, pokemonNames.address);
+		const pokemonToken: PokemonToken = await PokemonTokenFactory.deploy(pokemonLevelToken.address, stoneToken.address, pokemonNamesAddress);
 		await pokemonToken.deployed();
 
 		return { pokemonToken, pokemonLevelToken, stoneToken, deployer, customer };
@@ -165,19 +172,19 @@ describe("PokemonToken", async () => {
 		})
 
 		it("created pokemon correctly", async () => {
-			const { pokemonToken, pokemonLevelToken, customer } = await loadFixture(deploy);
-
-			const level100 = 100;
-
-			await expect(pokemonToken.connect(customer).createPokemon(0))
-				.to.be.revertedWith("You haven't PKMN");
+			const { pokemonToken, pokemonLevelToken, deployer, customer } = await loadFixture(deploy);
 
 			await customer.sendTransaction({
 				to: pokemonToken.address,
 				value: ethers.utils.parseEther('0.01')
 			});
 
-			await expect(pokemonToken.connect(customer).createPokemon(0))
+			await deployer.sendTransaction({
+				to: pokemonToken.address,
+				value: ethers.utils.parseEther('0.01')
+			});
+
+			await expect(pokemonToken.connect(customer).createPokemon(tokenId))
 				.to.be.revertedWith("You haven't PLVL");
 
 			await customer.sendTransaction({
@@ -185,12 +192,106 @@ describe("PokemonToken", async () => {
 				value: level100
 			});
 
-			await (await pokemonToken.connect(customer).createPokemon(0)).wait();
+			await deployer.sendTransaction({
+				to: pokemonLevelToken.address,
+				value: level100
+			});
 
-			await expect(pokemonToken.connect(customer).createPokemon(0))
-				.to.be.revertedWith("You already created a pokemon");
+			await expect(pokemonToken.connect(customer).createPokemon(notAvailableToken))
+				.to.be.revertedWith("ERC721: invalid token ID");
+
+			await expect(pokemonToken.createPokemon(tokenId))
+				.to.be.revertedWith("You haven't this PKMN");
+
+
+
+			await (await pokemonToken.connect(customer).createPokemon(tokenId)).wait();
+
+			const index = await pokemonToken.connect(customer).myPokemonIndex(tokenId);
+			expect(await pokemonToken.connect(customer).myPokemonName(tokenId)).to.eq(_firstStageNames[index]);
+			expect(await pokemonToken.connect(customer).myPokemonStage(tokenId)).to.eq(1);
 		})
 
+		it("evo of pokemon is correct", async () => {
+			const { pokemonToken, stoneToken, pokemonLevelToken, customer } = await loadFixture(deploy);
 
+			let index3;
+
+			await customer.sendTransaction({
+				to: pokemonToken.address,
+				value: ethers.utils.parseEther('0.01')
+			});
+
+			await customer.sendTransaction({
+				to: pokemonLevelToken.address,
+				value: level100
+			});
+
+			await customer.sendTransaction({
+				to: stoneToken.address,
+				value: ethers.utils.parseEther('0.5')
+			});
+
+			await (await pokemonToken.connect(customer).createPokemon(tokenId)).wait();
+
+			const index1 = await pokemonToken.connect(customer).myPokemonIndex(tokenId);
+			expect(await pokemonToken.connect(customer).myPokemonName(tokenId)).to.eq(_firstStageNames[index1]);
+			expect(await pokemonToken.connect(customer).myPokemonStage(tokenId)).to.eq(1);
+
+			await expect(pokemonToken.connect(customer).evolution(notAvailableToken))
+				.to.be.revertedWith("ERC721: invalid token ID");
+			await expect(pokemonToken.evolution(tokenId))
+				.to.be.revertedWith("You haven't this PKMN");
+
+			await (await pokemonToken.connect(customer).evolution(tokenId)).wait();
+
+			const index2 = await pokemonToken.connect(customer).myPokemonIndex(tokenId + 1);
+			expect(await pokemonToken.connect(customer).myPokemonName(tokenId + 1)).to.eq(_secondStageNames[index1]);
+			expect(await pokemonToken.connect(customer).myPokemonStage(tokenId + 1)).to.eq(2);
+
+			await expect(pokemonToken.connect(customer).evolution(tokenId))
+				.to.be.revertedWith("ERC721: invalid token ID");
+
+			if (index1 < 4) {
+				await (await pokemonToken.connect(customer).evolution(tokenId + 1)).wait();
+
+				index3 = await pokemonToken.connect(customer).myPokemonIndex(tokenId + 2);
+				expect(await pokemonToken.connect(customer).myPokemonName(tokenId + 2)).to.eq(_thirdStageNames[index1]);
+				expect(await pokemonToken.connect(customer).myPokemonStage(tokenId + 2)).to.eq(3);
+
+				await expect(pokemonToken.connect(customer).evolution(tokenId + 1))
+					.to.be.revertedWith("ERC721: invalid token ID");
+
+			} else {
+				let index;
+				if (index1 == 3) {
+					index = 0;
+				} else {
+					index = 2;
+				}
+
+				await expect(pokemonToken.connect(customer).evolution(tokenId + 1))
+					.to.be.revertedWith("You haven't STN for evolve");
+
+				await (await stoneToken.createStoneWithIndexTo(customer.address, index)).wait();
+
+				expect(await stoneToken.connect(customer).balanceOf(customer.address))
+					.to.be.eq(1);
+
+				await (await pokemonToken.connect(customer).evolution(tokenId + 1)).wait();
+
+				expect(await stoneToken.connect(customer).balanceOf(customer.address))
+					.to.be.eq(0);
+
+				index3 = await pokemonToken.connect(customer).myPokemonIndex(tokenId + 2);
+				expect(await pokemonToken.connect(customer).myPokemonName(tokenId + 2)).to.eq(_thirdStageNames[index1]);
+				expect(await pokemonToken.connect(customer).myPokemonStage(tokenId + 2)).to.eq(3);
+
+				await expect(pokemonToken.connect(customer).evolution(tokenId + 1))
+					.to.be.revertedWith("ERC721: invalid token ID");
+			}
+			expect(index1).to.eq(index2);
+			expect(index2).to.eq(index3);
+		})
 	})
 })
