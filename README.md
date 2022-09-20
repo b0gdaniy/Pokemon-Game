@@ -121,7 +121,7 @@ For another methods of this contract check {NFTTemplate.sol}
 )
 For another methods of this contract check {NFTTemplate.sol}
 
-### NFTTemplate (can implement adding and removing names):
+### PokemonNames (can implement adding and removing names):
 - `firstStageNames(index)` - returns first stage name by `index`
 - `secondStageNames(index)` - returns second stage name by `index`
 - `thirdStageNames(index)` - returns third stage name by `index`
