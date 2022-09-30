@@ -12,113 +12,71 @@ PokemonToken address:  0x205621FcC47f1b6Be187e8Ff99B653B4A803678B
 ## Smart Contracts Methods
 
 ### PokemonLevelToken:
-- `receive()` - receives funds and mints tokens for `msg.sender`
-- `mint(to,amount)` - mins tokens to `to` with amount `amount` 
-(
-	REQUIREMENTS: `msg.sender` must be the owner of this contract
-)
-- `burn(amount)` - burns tokens from `msg.sender` with amount `amount`
+- `receive()` - receives funds and mints tokens for `msg.sender`.
+- `mint(to,amount)` - mins tokens to `to` with amount `amount`.
+(REQUIREMENTS: `msg.sender` must be the owner of this contract)
+- `burn(amount)` - burns tokens from `msg.sender` with amount `amount`.
 For another methods of this contract check {@openzeppelin/contracts/token/ERC20}
 
 ### StoneToken:
 - `receive()` - receives funds and mints token for `msg.sender`
-(
-	REQUIREMENTS: `msg.value` must be equal or grater then 0.5 ether
-)
+(REQUIREMENTS: `msg.value` must be equal or grater then 0.5 ether)
 - `safeMint(to,tokenId)` - mins tokens to `to` with token id `tokenId`
-(
-	REQUIREMENTS: 
+(REQUIREMENTS: 
 	- `msg.sender` must be the owner of this contract,
-	- `msg.sender` cant have STN
-)
+	- `msg.sender` cant have STN)
 - `deleteStone(tokenId)` - deletes Stone from `tx.origin` with token id `tokenId`
-(
-	REQUIREMENTS: 
+(REQUIREMENTS: 
 	- `tx.origin` must have STN,
-	- `tx.origin` must be an owner of token with `tokenId`
-)
+	- `tx.origin` must be an owner of token with `tokenId`)
 - `createStone(tokenId)` - creates Stone to `msg.sender` with random type
-(
-	REQUIREMENTS: 
+(REQUIREMENTS: 
 	- `msg.sender` must have STN,
-	- `msg.sender` mustn't have Stone
-)
+	- `msg.sender` mustn't have Stone)
 - `createStoneWithIndexTo(to, index)` - creates Stone to `to` with `index` type
-(
-	REQUIREMENTS: 
+(REQUIREMENTS: 
 	- `to` must have STN,
-	- `to` mustn't have Stone
-)
+	- `to` mustn't have Stone)
 - `stoneType(stoneOwner)` - returns Stone type of `stoneOwner`
-(
-	REQUIREMENTS: 
-	- `to` must have STN
-)
+(REQUIREMENTS: 
+	- `to` must have STN)
 - `stoneId(stoneOwner)` - returns Stone token id of `stoneOwner`
-(
-	REQUIREMENTS: 
-	- `to` must have STN
-)
+(REQUIREMENTS: 
+	- `to` must have STN)
 - `stoneNameOf(stoneOwner)` - returns Stone name of `stoneOwner`
-(
-	REQUIREMENTS: 
-	- `to` must have STN
-)
+(REQUIREMENTS: 
+	- `to` must have STN)
 - `stoneNames(stoneType)` - returns Stone names with `stoneType` index
-(
-	REQUIREMENTS: 
-	- `to` must have STN
-)
 For another methods of this contract check {NFTTemplate.sol}
 
 ### PokemonToken:
 - `receive()` - receives funds and mints Pokemon Token for `msg.sender`
-(
-	REQUIREMENTS: `msg.value` must be equal or grater then 0.01 ether
-)
+(REQUIREMENTS: `msg.value` must be equal or grater then 0.01 ether)
 - `createPokemon(tokenId)` - creates a pokemon for `msg.sender`, with random Pokemon types. Started from 1st stage.
-(
-	REQUIREMENTS: 
-	- `msg.sender` must have PLVL token to create
-)
+(REQUIREMENTS: 
+	- `msg.sender` must have PLVL token to create)
 - `createPokemonWithIndex(tokenId, index)` - creates a pokemon for `msg.sender`, with `index` Pokemon types. Started from 1st stage.
-(
-	REQUIREMENTS: 
+(REQUIREMENTS: 
 	- `msg.sender` must be an owner of this contract
-    - `msg.sender` must have PLVL token to create
-)
+    - `msg.sender` must have PLVL token to create)
 - `evolution(tokenId)` - evolves pokemon for `msg.sender`, with `_index` Pokemon types. Changed `_stage` to one more
-(
-	REQUIREMENTS: 
+(REQUIREMENTS: 
 	- `msg.sender` must be an owner of this contract
-    - `msg.sender` must have PLVL token to create
-)
+    - `msg.sender` must have PLVL token to create)
 - `pokemonLvl()` - returns lvl of `msg.sender`, generates from PLVL balance
 - `myPokemon(tokenId)` - returns Pokemon of `msg.sender`
-(
-	REQUIREMENTS: 
-	- `msg.sender` must be an owner of `tokenId`
-)
+(REQUIREMENTS: 
+	- `msg.sender` must be an owner of `tokenId`)
 - `myPokemonIndex(tokenId)` - returns Pokemon index of `msg.sender`
-(
-	REQUIREMENTS: 
-	- `msg.sender` must be an owner of `tokenId`
-)
+(REQUIREMENTS: 
+	- `msg.sender` must be an owner of `tokenId`)
 - `myPokemonName(tokenId)` - returns Pokemon name of `msg.sender`
-(
-	REQUIREMENTS: 
-	- `msg.sender` must be an owner of `tokenId`
-)
+(REQUIREMENTS: 
+	- `msg.sender` must be an owner of `tokenId`)
 - `myPokemonStage(tokenId)` - returns Pokemon stage of `msg.sender`
-(
-	REQUIREMENTS: 
-	- `msg.sender` must be an owner of `tokenId`
-)
-- `pokemonNames(index,stage)` - returns Pokemon names from {PokemonNames.sol} by `index` and `stage` 
-(
-	REQUIREMENTS: 
-	- `msg.sender` must be an owner of `tokenId`
-)
+(REQUIREMENTS: 
+	- `msg.sender` must be an owner of `tokenId`)
+- `pokemonNames(index,stage)` - returns Pokemon names from {PokemonNames.sol} by `index` and `stage`
 For another methods of this contract check {NFTTemplate.sol}
 
 ### PokemonNames (can implement adding and removing names):
@@ -127,11 +85,15 @@ For another methods of this contract check {NFTTemplate.sol}
 - `thirdStageNames(index)` - returns third stage name by `index`
 
 ### NFTTemplate:
+- `withdrawAll()` - withdraws all funds in contract.
+(REQUIREMENTS: -`msg.sender` must be the owner of this contract)
+- `withdraw(amount)` - withdraws `_amount` funds in contract.
+(REQUIREMENTS: `msg.sender` must be the owner of this contract)
 - `safeMint(to,tokenId)` - mins tokens to `to` with token id `tokenId`
-(
-	REQUIREMENTS: 
+(REQUIREMENTS: 
 	- `msg.sender` must be an owner of this contract,
-)
+	- `tokenId` must not exist,
+	-If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer.)
 For another methods of this contract check {@openzeppelin/contracts/token/ERC721}
 
 
