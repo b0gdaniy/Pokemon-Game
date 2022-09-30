@@ -2,14 +2,9 @@
 pragma solidity ^0.8.16;
 
 import "./NFTTemplate.sol";
+import "./Structs/Stone.sol";
 
 contract StoneToken is NFTTemplate {
-    struct Stone {
-        uint256 tokenId;
-        string name;
-        StoneType stoneType;
-    }
-
     uint256 private currentId;
     mapping(address => Stone) private _stoneOf;
 

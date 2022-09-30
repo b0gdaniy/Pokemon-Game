@@ -5,6 +5,7 @@ import "./NFTTemplate.sol";
 import "./PokemonLevelToken.sol";
 import "./StoneToken.sol";
 import "./IPokemonNames.sol";
+import "./Structs/Pokemon.sol";
 
 /**
  * @title Pokemon Game token
@@ -19,12 +20,6 @@ contract PokemonToken is NFTTemplate {
     StoneToken public stoneToken;
     /// @dev Added and on it we can add more pokemon names.
     IPokemonNames public pokemonNames_;
-
-    struct Pokemon {
-        string name;
-        uint256 stage;
-        PokemonsNum index;
-    }
 
     uint256 internal _currentTokenId;
     mapping(address => mapping(uint256 => Pokemon)) internal _pokemonOf;
