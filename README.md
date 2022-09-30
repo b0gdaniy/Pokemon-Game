@@ -1,6 +1,18 @@
-# POKEMON GAME 
+<h1 align="center">
+<img src='https://www.pngall.com/wp-content/uploads/4/Pokeball-PNG-Images.png' width = '50' height = '50'/>
+POKEMON GAME
+<img src='https://www.pngall.com/wp-content/uploads/4/Pokeball-PNG-Images.png' width = '50' height = '50'/>
+</h1>
+<p align='center'>
+    <img src='https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/2560px-International_Pok%C3%A9mon_logo.svg.png'/>
+</p>
 
-Goerli network:
+<h2 align="center">
+<img src='https://avatars.githubusercontent.com/u/43071041?s=280&v=4' width = '30' height = '30'/>
+GOERLI NETWORK
+<img src='https://avatars.githubusercontent.com/u/43071041?s=280&v=4' width = '30' height = '30'/>
+</h2>
+
 ```
 PokemonLevelToken address:  0x5Dd4766194c6a2E5C4994DD52D75909a37c12E91
 StoneToken address:  0x26f9A1b798F848F10A8e83bdD874f29055FF856b
@@ -9,9 +21,14 @@ PokemonNames address:  0xe2226bA8B8Da6a2edf1878d823f479B64B18DCa8
 PokemonToken address:  0x205621FcC47f1b6Be187e8Ff99B653B4A803678B
 ```
 
-## Smart Contracts Methods
+<h2 align="center">
+<img src='https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Solidity_logo.svg/1200px-Solidity_logo.svg.png' width = '20' height = '30'/>
+SMART CONTRACTS METHODS
+<img src='https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Solidity_logo.svg/1200px-Solidity_logo.svg.png' width = '20' height = '30'/>
+</h2>
 
-### PokemonLevelToken:
+<h3 align="center">🆙 PokemonLevelToken</h3>
+
 - `receive()` - receives funds and mints tokens for `msg.sender`.
 - `mint(to,amount)` - mins tokens to `to` with amount `amount`.
 
@@ -19,7 +36,8 @@ PokemonToken address:  0x205621FcC47f1b6Be187e8Ff99B653B4A803678B
 - `burn(amount)` - burns tokens from `msg.sender` with amount `amount`.
 For another methods of this contract check {@openzeppelin/contracts/token/ERC20}
 
-### StoneToken:
+<h3 align="center">🪨 StoneToken</h3>
+
 - `receive()` - receives funds and mints token for `msg.sender`.
 
 (REQUIREMENTS: `msg.value` must be equal or grater then 0.5 ether)
@@ -59,7 +77,11 @@ For another methods of this contract check {@openzeppelin/contracts/token/ERC20}
 
 For another methods of this contract check {NFTTemplate.sol}
 
-### PokemonToken:
+<h3 align="center">
+<img src='https://www.pngall.com/wp-content/uploads/4/Pokeball-PNG-Images.png' width = '20' height = '20'/>
+PokemonToken
+</h3>
+
 - `receive()` - receives funds and mints Pokemon Token for `msg.sender`.
 
 (REQUIREMENTS: `msg.value` must be equal or grater then 0.01 ether)
@@ -99,12 +121,18 @@ For another methods of this contract check {NFTTemplate.sol}
 
 For another methods of this contract check {NFTTemplate.sol}
 
-### PokemonNames (can implement adding and removing names):
+<h3 align="center">☑️PokemonNames</h3>
+
+(can implement adding and removing names)
 - `firstStageNames(index)` - returns first stage name by `index`
 - `secondStageNames(index)` - returns second stage name by `index`
 - `thirdStageNames(index)` - returns third stage name by `index`
 
-### NFTTemplate:
+<h3 align="center">
+<img src='https://upload.wikimedia.org/wikipedia/commons/2/24/NFT_Icon.png' width = '30' height = '30'/>
+ NFTTemplate
+</h3>
+
 - `withdrawAll()` - withdraws all funds in contract.
 
 (REQUIREMENTS: -`msg.sender` must be the owner of this contract)
@@ -121,7 +149,7 @@ For another methods of this contract check {NFTTemplate.sol}
 For another methods of this contract check {@openzeppelin/contracts/token/ERC721}
 
 
-## Sample Hardhat Project
+<h2 align="center">👷‍♂️HOW TO USE HARDHAT IN THIS PROJECT👷‍♂️</h2>
 
 This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
 
