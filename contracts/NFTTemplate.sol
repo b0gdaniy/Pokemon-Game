@@ -5,23 +5,6 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract NFTTemplate is ERC721, Ownable {
-    enum PokemonsNum {
-        Venusaur,
-        Charizard,
-        Blastoise,
-        Vileplume,
-        Poliwrath,
-        Bellosom,
-        Politoed
-    }
-
-    enum StoneType {
-        Leaf,
-        Sun,
-        Water,
-        KingsRock
-    }
-
     uint256 private nonce;
 
     constructor(string memory _name, string memory _symbol)
