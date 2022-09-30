@@ -2,13 +2,24 @@
 pragma solidity ^0.8.16;
 import "./IPokemonNames.sol";
 
+/**
+ * @title PokemonNames
+ * @author Bohdan Pukhno
+ * @dev Pokemon Names contract that returns names of Pokemons on 3 stages.
+ */
 contract PokemonNames is IPokemonNames {
     string public name;
 
+    /**
+     * @dev Initializes the contract. Setting the `name` of contract by the `_name` parameter passed to it.
+     */
     constructor(string memory _name) {
         name = _name;
     }
 
+    /**
+     * @dev See {IPokemonNames-firstStageNames}.
+     */
     function firstStageNames(uint256 _index)
         external
         pure
@@ -24,6 +35,9 @@ contract PokemonNames is IPokemonNames {
         return _firstStageNames[_index];
     }
 
+    /**
+     * @dev See {IPokemonNames-secondStageNames}.
+     */
     function secondStageNames(uint256 _index)
         external
         pure
@@ -39,6 +53,9 @@ contract PokemonNames is IPokemonNames {
         return _secondStageNames[_index];
     }
 
+    /**
+     * @dev See {IPokemonNames-thirdStageNames}.
+     */
     function thirdStageNames(uint256 _index)
         external
         pure

@@ -10,7 +10,8 @@ import "./Structs/Pokemon.sol";
 /**
  * @title Pokemon Game token
  * @author Bohdan Pukhno
- * @dev In the Pokemon Game, the user can level up by purchasing level tokens or crafting stone tokens if the user is lucky.
+ * @dev Imlementation of ERC721 token contract.
+ * @notice In the Pokemon Game, the user can level up by purchasing level tokens or crafting stone tokens if the user is lucky.
  * You need to expand the Pokemon Names, Stone Token, and Level Token first, then you can expand the Pokemon Token.
  */
 contract PokemonToken is NFTTemplate {
@@ -31,8 +32,7 @@ contract PokemonToken is NFTTemplate {
     }
 
     /**
-     * @dev Initializes the contract, setting the deployer as the initial owner.
-     * Setting the token contracts addresses by the parameters passed to it.
+     * @dev See {NFTTempate-constructor}.
      */
     constructor(
         PokemonLevelToken _lvlToken,
@@ -86,7 +86,7 @@ contract PokemonToken is NFTTemplate {
     /**
      * @dev Evolves pokemon for `msg.sender`, with `_index` Pokemon types.
      * Changed `_stage` to one more
-
+     *
      * Needs for check in unit tests.
      *
      * REQUIREMENTS:
@@ -106,10 +106,19 @@ contract PokemonToken is NFTTemplate {
         _createPokemon(_currentTokenId - 1, _index, _stage + 1);
     }
 
+    /**
+     * @dev Returns lvl of `msg.sender`, generates from PLVL balance.
+     */
     function pokemonLvl() public view returns (uint256) {
         return lvlToken.balanceOf(msg.sender) / _lvlTokensMultiplier();
     }
 
+    /**
+     * @dev Returns Pokemon of `msg.sender`.
+     *
+     * REQUIREMENTS:
+     * - `msg.sender` must be an owner of `tokenId`
+     */
     function myPokemon(uint256 _tokenId)
         public
         view
@@ -119,6 +128,12 @@ contract PokemonToken is NFTTemplate {
         return _pokemonOf[msg.sender][_tokenId];
     }
 
+    /**
+     * @dev Returns Pokemon index of `msg.sender`.
+     *
+     * REQUIREMENTS:
+     * - `msg.sender` must be an owner of `tokenId`
+     */
     function myPokemonIndex(uint256 _tokenId)
         public
         view
@@ -128,6 +143,12 @@ contract PokemonToken is NFTTemplate {
         return myPokemon(_tokenId).index;
     }
 
+    /**
+     * @dev Returns Pokemon name of `msg.sender`.
+     *
+     * REQUIREMENTS:
+     * - `msg.sender` must be an owner of `tokenId`
+     */
     function myPokemonName(uint256 _tokenId)
         public
         view
@@ -137,6 +158,12 @@ contract PokemonToken is NFTTemplate {
         return myPokemon(_tokenId).name;
     }
 
+    /**
+     * @dev Returns Pokemon stage of `msg.sender`.
+     *
+     * REQUIREMENTS:
+     * - `msg.sender` must be an owner of `tokenId`
+     */
     function myPokemonStage(uint256 _tokenId)
         public
         view
@@ -146,6 +173,9 @@ contract PokemonToken is NFTTemplate {
         return myPokemon(_tokenId).stage;
     }
 
+    /**
+     * @dev returns Pokemon names from {PokemonNames.sol} by `index` and `stage`.
+     */
     function pokemonNames(PokemonsNum _index, uint256 _stage)
         public
         view

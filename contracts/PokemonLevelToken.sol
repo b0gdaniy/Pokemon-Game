@@ -9,17 +9,29 @@ contract PokemonLevelToken is ERC20, ERC20Burnable, Ownable {
     constructor() ERC20("PokemonLevel", "PLVL") Ownable() {}
 
     /**
-     * @dev Minting `msg.value` tokens to `msg.sender`.
+     * @dev Receives `msg.value` and mints `msg.value` tokens to `msg.sender`.
      * @notice Level up to Pokemon.
      */
     receive() external payable {
         _mint(msg.sender, msg.value * 10**decimals());
     }
 
+    /**
+     * @dev Withdraws all funds in contract.
+     *
+     * REQUIREMENTS:
+     * - The caller must be an owner of this contract.
+     */
     function withdrawAll() external onlyOwner {
         _withdraw(address(this).balance);
     }
 
+    /**
+     * @dev Withdraws `_amount` funds in contract.
+     *
+     * REQUIREMENTS:
+     * - The caller must be an owner of this contract.
+     */
     function withdraw(uint256 _amount) external onlyOwner {
         _withdraw(_amount);
     }
@@ -28,12 +40,15 @@ contract PokemonLevelToken is ERC20, ERC20Burnable, Ownable {
      * @dev Minting `amount` of tokens to `to`.
      *
      * REQUIREMENTS:
-     * - The caller must be the owner of this contract.
+     * - The caller must be an owner of this contract.
      */
     function mint(address to, uint256 amount) public onlyOwner {
         _mint(to, amount);
     }
 
+    /**
+     * @dev Burns tokens from `msg.sender` with amount `amount`.
+     */
     function burn(uint256 amount) public override {
         _burn(tx.origin, amount);
     }
