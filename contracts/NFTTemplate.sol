@@ -16,12 +16,26 @@ contract NFTTemplate is ERC721, Ownable {
         _safeMint(to, tokenId);
     }
 
+    function withdrawAll() external onlyOwner {
+        _withdraw(address(this).balance);
+    }
+
+    function withdraw(uint256 _amount) external onlyOwner {
+        _withdraw(_amount);
+    }
+
     function random(uint256 _modulus) internal returns (uint256) {
         nonce++;
         return
             uint256(
                 keccak256(abi.encode(block.timestamp, msg.sender, nonce++))
             ) % _modulus;
+    }
+
+    function _withdraw(uint256 _amount) internal {
+        require(address(this).balance > 0, "Not enough funds");
+        (bool sent, ) = msg.sender.call{value: _amount}("");
+        require(sent, "Withdraw failed");
     }
 
     function _baseURI() internal pure override returns (string memory) {

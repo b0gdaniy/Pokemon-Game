@@ -16,6 +16,14 @@ contract PokemonLevelToken is ERC20, ERC20Burnable, Ownable {
         _mint(msg.sender, msg.value * 10**decimals());
     }
 
+    function withdrawAll() external onlyOwner {
+        _withdraw(address(this).balance);
+    }
+
+    function withdraw(uint256 _amount) external onlyOwner {
+        _withdraw(_amount);
+    }
+
     /**
      * @dev Minting `amount` of tokens to `to`.
      *
@@ -28,5 +36,11 @@ contract PokemonLevelToken is ERC20, ERC20Burnable, Ownable {
 
     function burn(uint256 amount) public override {
         _burn(tx.origin, amount);
+    }
+
+    function _withdraw(uint256 _amount) internal {
+        require(address(this).balance > 0, "Not enough funds");
+        (bool sent, ) = msg.sender.call{value: _amount}("");
+        require(sent, "Withdraw failed");
     }
 }
