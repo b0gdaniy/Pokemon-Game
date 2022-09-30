@@ -133,6 +133,34 @@ describe("PokemonToken", async () => {
 				value: ethers.utils.parseEther('0.001')
 			})).to.be.revertedWith("Amount must >= 0.01 ETH");
 		})
+
+		it("withdraws corectly", async () => {
+			const { pokemonToken, deployer, customer } = await loadFixture(deploy);
+
+			await expect(pokemonToken.withdraw(1))
+				.to.be.revertedWith("Not enough funds");
+			await expect(pokemonToken.withdrawAll())
+				.to.be.revertedWith("Not enough funds");
+
+			await deployer.sendTransaction({
+				to: pokemonToken.address,
+				value: ethers.utils.parseEther('0.03')
+			})
+			await customer.sendTransaction({
+				to: pokemonToken.address,
+				value: ethers.utils.parseEther('0.01')
+			})
+
+			await expect(pokemonToken.connect(customer).withdraw(1))
+				.to.be.revertedWith("Ownable: caller is not the owner");
+			await expect(pokemonToken.connect(customer).withdraw(1))
+				.to.be.revertedWith("Ownable: caller is not the owner");
+
+			await expect(await pokemonToken.withdraw(ethers.utils.parseEther('0.01')))
+				.to.changeEtherBalance(deployer.address, ethers.utils.parseEther('0.01'));
+			await expect(await pokemonToken.withdrawAll())
+				.to.changeEtherBalance(deployer.address, ethers.utils.parseEther('0.03'));
+		})
 	})
 
 	describe("Tokens", async () => {

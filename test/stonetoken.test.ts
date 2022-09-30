@@ -88,6 +88,34 @@ describe("StoneToken", async () => {
 				value: ethers.utils.parseEther('0.001')
 			})).to.be.revertedWith("Amount must >= 0.5 ETH");
 		})
+
+		it("withdraws corectly", async () => {
+			const { stoneToken, deployer, customer } = await loadFixture(deploy);
+
+			await expect(stoneToken.withdraw(1))
+				.to.be.revertedWith("Not enough funds");
+			await expect(stoneToken.withdrawAll())
+				.to.be.revertedWith("Not enough funds");
+
+			await deployer.sendTransaction({
+				to: stoneToken.address,
+				value: ethers.utils.parseEther('0.5')
+			})
+			await customer.sendTransaction({
+				to: stoneToken.address,
+				value: ethers.utils.parseEther('0.5')
+			})
+
+			await expect(stoneToken.connect(customer).withdraw(1))
+				.to.be.revertedWith("Ownable: caller is not the owner");
+			await expect(stoneToken.connect(customer).withdraw(1))
+				.to.be.revertedWith("Ownable: caller is not the owner");
+
+			await expect(await stoneToken.withdraw(ethers.utils.parseEther('0.5')))
+				.to.changeEtherBalance(deployer.address, ethers.utils.parseEther('0.5'));
+			await expect(await stoneToken.withdrawAll())
+				.to.changeEtherBalance(deployer.address, ethers.utils.parseEther('0.5'));
+		})
 	})
 
 	describe("Tokens", async () => {

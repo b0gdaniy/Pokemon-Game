@@ -65,4 +65,32 @@ describe("PokemonLevelToken", async () => {
 		}))
 			.to.changeTokenBalance(pokemonLevelToken, customer.address, ethers.utils.parseEther('1'));
 	})
+
+	it("withdraws corectly", async () => {
+		const { pokemonLevelToken, deployer, customer } = await loadFixture(deploy);
+
+		await expect(pokemonLevelToken.withdraw(1))
+			.to.be.revertedWith("Not enough funds");
+		await expect(pokemonLevelToken.withdrawAll())
+			.to.be.revertedWith("Not enough funds");
+
+		await deployer.sendTransaction({
+			to: pokemonLevelToken.address,
+			value: 3
+		});
+		await customer.sendTransaction({
+			to: pokemonLevelToken.address,
+			value: 1
+		});
+
+		await expect(pokemonLevelToken.connect(customer).withdraw(1))
+			.to.be.revertedWith("Ownable: caller is not the owner");
+		await expect(pokemonLevelToken.connect(customer).withdraw(1))
+			.to.be.revertedWith("Ownable: caller is not the owner");
+
+		await expect(await pokemonLevelToken.withdraw(1))
+			.to.changeEtherBalances([deployer.address, pokemonLevelToken.address], [1, -1]);
+		await expect(await pokemonLevelToken.withdrawAll())
+			.to.changeEtherBalances([deployer.address, pokemonLevelToken.address], [3, -3]);
+	})
 })
