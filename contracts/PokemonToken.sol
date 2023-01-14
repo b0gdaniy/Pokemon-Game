@@ -4,7 +4,6 @@ pragma solidity ^0.8.16;
 import "./NFTTemplate.sol";
 import "./PokemonLevelToken.sol";
 import "./StoneToken.sol";
-import "./IPokemonNames.sol";
 import "./Structs/Pokemon.sol";
 
 /**
@@ -19,8 +18,6 @@ contract PokemonToken is NFTTemplate {
     PokemonLevelToken public lvlToken;
     /// @dev Added for interaction with STN token contract.
     StoneToken public stoneToken;
-    /// @dev Added and on it we can add more pokemon names.
-    IPokemonNames public pokemonNames_;
 
     uint256 internal _currentTokenId;
     mapping(address => mapping(uint256 => Pokemon)) internal _pokemonOf;
@@ -34,14 +31,11 @@ contract PokemonToken is NFTTemplate {
     /**
      * @dev See {NFTTempate-constructor}.
      */
-    constructor(
-        PokemonLevelToken _lvlToken,
-        StoneToken _stoneToken,
-        IPokemonNames _pokemonNames
-    ) NFTTemplate("Pokemon", "PKMN") {
+    constructor(PokemonLevelToken _lvlToken, StoneToken _stoneToken)
+        NFTTemplate("Pokemon", "PKMN")
+    {
         lvlToken = _lvlToken;
         stoneToken = _stoneToken;
-        pokemonNames_ = _pokemonNames;
     }
 
     /**
@@ -178,15 +172,36 @@ contract PokemonToken is NFTTemplate {
      */
     function pokemonNames(PokemonsNum _index, uint256 _stage)
         public
-        view
+        pure
         returns (string memory)
     {
+        string[5] memory _firstStageNames = [
+            "Bulbasaur",
+            "Charmander",
+            "Squirtle",
+            "Oddish",
+            "Poliwag"
+        ];
+        string[5] memory _secondStageNames = [
+            "Ivysaur",
+            "Charmeleon",
+            "Wartortle",
+            "Gloom",
+            "Poliwhirl"
+        ];
+        string[7] memory _thirdStageNames = [
+            "Venusaur",
+            "Charizard",
+            "Blastoise",
+            "Vileplume",
+            "Poliwrath",
+            "Bellossom",
+            "Politoed"
+        ];
         return
-            _stage == 2
-                ? pokemonNames_.secondStageNames(uint256(_index))
-                : _stage == 3
-                ? pokemonNames_.thirdStageNames(uint256(_index))
-                : pokemonNames_.firstStageNames(uint256(_index));
+            _stage == 2 ? _secondStageNames[uint256(_index)] : _stage == 3
+                ? _thirdStageNames[uint256(_index)]
+                : _firstStageNames[uint256(_index)];
     }
 
     function _createPokemon(

@@ -54,14 +54,8 @@ describe("PokemonToken", async () => {
 		const stoneToken: StoneToken = await StoneTokenFactory.deploy();
 		await stoneToken.deployed();
 
-		const PokemonNamesFactory = await ethers.getContractFactory("PokemonNames");
-		const pokemonNames = await PokemonNamesFactory.deploy("PokemonNames");
-		await pokemonNames.deployed();
-
-		const pokemonNamesAddress: any = pokemonNames.address;
-
 		const PokemonTokenFactory = await ethers.getContractFactory("PokemonToken");
-		const pokemonToken: PokemonToken = await PokemonTokenFactory.deploy(pokemonLevelToken.address, stoneToken.address, pokemonNamesAddress);
+		const pokemonToken: PokemonToken = await PokemonTokenFactory.deploy(pokemonLevelToken.address, stoneToken.address);
 		await pokemonToken.deployed();
 
 		return { pokemonToken, pokemonLevelToken, stoneToken, deployer, customer };
